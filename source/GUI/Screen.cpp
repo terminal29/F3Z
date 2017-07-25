@@ -23,6 +23,7 @@ void Screen::update() {
 		return;
 	}
 
+	
 	hidScanInput();
 	node->update();
 }

@@ -11,16 +11,17 @@
 int main(int argc, char **argv) {
 	Result rc = romfsInit();
 	util::initC3D();
-	util::loadShaders();
+	
 	Screen* scr = Screen::getInstance();
-	scr->setup();
 	BaseNode base;
 	scr->setBaseNode(&base);
 	float pos[3] = { 0.0f,0.0f,-5.0f };
-	Island homeIsland(&base, pos, "romfs:assets/models/home.obj", "romfs:assets/textures/home.png");
+	Island homeIsland(&base, pos, "romfs:assets/models/Home.obj", "romfs:assets/textures/Home.png");
+
+	util::loadShaders();
+	C3D_CullFace(GPU_CULLMODE::GPU_CULL_NONE);
 
 	while (aptMainLoop()) {
-		util::debug_print("FRAME");
 		IRenderable::beginFrame();
 		scr->update();
 		IRenderable::endFrame();

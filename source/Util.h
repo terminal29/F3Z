@@ -16,8 +16,7 @@
 #include <3ds.h>
 #include "Lib/picopng.h"
 
-//#define TK_OBJFILE_IMPLEMENTATION
-//#include "Lib/tk_objfile.h"
+
 
 /* compiled shaders */
 #include "vshader_shbin.h"
@@ -75,6 +74,6 @@ namespace util {
 	}
 
 	// Loads an OBJ file from the filepath and returns a vertex array
-//	extern vertex* loadOBJ(std::string filepath);
+	extern vertex* loadOBJ(std::string filepath, std::size_t* numVerts);
 
 }

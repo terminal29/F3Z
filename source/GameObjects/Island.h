@@ -11,6 +11,8 @@ public:
 	virtual void update() override;
 protected:
 	util::vertex* model; // The islands model 
+	float scale = 3;
+	std::size_t numVerts;
 	unsigned char* bitmap; // Texture as an RGBA texture
 	C3D_Tex gpuTexture; // texture to be sent to the gpu
 	float* position;

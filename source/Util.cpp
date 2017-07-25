@@ -1,5 +1,8 @@
 #include "Util.h"
 
+#define TK_OBJFILE_IMPLEMENTATION
+#include "Lib/tk_objfile.h"
+
 namespace util {
 
 	shaderProgram_s DEFAULT_SHADERPROGRAM;
@@ -19,6 +22,7 @@ namespace util {
 	}
 
 	void throw_error(std::string text) {
+		debug_print(text);
 
 		errorConf err;
 		errorInit(&err, errorType::ERROR_TEXT_WORD_WRAP, CFG_Language::CFG_LANGUAGE_EN);
@@ -31,11 +35,11 @@ namespace util {
 	void debug_print(std::string text) {
 #ifdef _DEBUG_
 
-	/*	FILE* logfile = fopen("_Application.log", "ab+");
+		FILE* logfile = fopen("_Application.log", "ab+");
 		fseek(logfile, 0, SEEK_END);
 		fwrite(text.c_str(), sizeof(char), text.size(), logfile);
 		fwrite(std::string("\n").c_str(), sizeof(char), 1, logfile);
-		fclose(logfile);*/
+		fclose(logfile);
 
 		consoleDebugInit(debugDevice_SVC);
 		std::cerr << text << std::endl;
@@ -144,17 +148,62 @@ namespace util {
 		C3D_RenderTargetSetClear(RT_BOTTOM, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
 		C3D_RenderTargetSetOutput(RT_BOTTOM, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 	}
-	/*
-	vertex* loadOBJ(std::string filepath) {
+	
+	static unsigned long long _objNumVerts = 0;
+	vertex* loadOBJ(std::string filepath, std::size_t* numVerts) {
+
+		//Create a pointer we will return with our vertex buffer
 		vertex* vertexArray;
-		// Set processTriangle func to run for each tri
+
+		// Create obj loader thing
 		TK_ObjDelegate objDelegate = {};
+		
+		//Reset our counter for the new obj
+		_objNumVerts = 0;
+
+		// Set func to run for each triangle
 		objDelegate.triangle = [](TK_TriangleVert a, TK_TriangleVert b, TK_TriangleVert c, void* data) {
 		// Do stuff with triangle (ie add to vertexArray)
-			std::stringstream info;
-			info << a.pos[0] << ":" << a.pos[1] << ":" << a.pos[2];
-			util::debug_print(info.str());
-			stop();
+			vertex v1,v2,v3;
+			
+			//Copy over v1
+			v1.position[0] = a.pos[0];
+			v1.position[1] = a.pos[1];
+			v1.position[2] = a.pos[2];
+			v1.normal[0] = a.nrm[0];
+			v1.normal[1] = a.nrm[1];
+			v1.normal[2] = a.nrm[2];
+			v1.texcoord[0] = a.st[0];
+			v1.texcoord[1] = a.st[1];
+
+			//Copy over v2
+			v2.position[0] = b.pos[0];
+			v2.position[1] = b.pos[1];
+			v2.position[2] = b.pos[2];
+			v2.normal[0] = b.nrm[0];
+			v2.normal[1] = b.nrm[1];
+			v2.normal[2] = b.nrm[2];
+			v2.texcoord[0] = b.st[0];
+			v2.texcoord[1] = b.st[1];
+
+			//Copy over v3
+			v3.position[0] = c.pos[0];
+			v3.position[1] = c.pos[1];
+			v3.position[2] = c.pos[2];
+			v3.normal[0] = c.nrm[0];
+			v3.normal[1] = c.nrm[1];
+			v3.normal[2] = c.nrm[2];
+			v3.texcoord[0] = c.st[0];
+			v3.texcoord[1] = c.st[1];
+
+			// Get pointer to our existing vertices
+			vertex* vertices = (vertex*)data;
+			// Copy our 3 new vertices in
+			memcpy(&vertices[_objNumVerts], &v1, sizeof(vertex));
+			memcpy(&vertices[_objNumVerts+1], &v2, sizeof(vertex));
+			memcpy(&vertices[_objNumVerts+2], &v3, sizeof(vertex));
+
+			_objNumVerts += 3;
 		};
 
 		std::streamsize size;
@@ -184,10 +233,26 @@ namespace util {
 		objDelegate.scratchMemSize = 0;
 		TK_ParseObj(&buffer[0], size, &objDelegate);
 
-		objDelegate.scratchMem = malloc(objDelegate.scratchMemSize);
+		//Give the scratch some memory
+		objDelegate.scratchMem = linearAlloc(objDelegate.scratchMemSize);
+
+		// Allocate some memory for our vertex buffer
+		vertexArray = (vertex*)linearAlloc(sizeof(vertex) * objDelegate.numVerts);
+
+		// Pass our buffer into to the triangle function
+		objDelegate.userData = (void*)vertexArray;
 
 		// Parse again with memory. This will call material() and
 		// triangle() callbacks
 		TK_ParseObj(&buffer[0], size, &objDelegate);
-	}*/
+
+		// Output the number of vertices
+		*numVerts = objDelegate.numVerts;
+
+		// Free the scratch memory
+		linearFree(objDelegate.scratchMem);
+		
+		util::debug_print("Loaded " + filepath + " successfully!");
+		return vertexArray;
+	}
 }
