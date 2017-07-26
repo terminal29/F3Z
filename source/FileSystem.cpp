@@ -9,7 +9,7 @@ FileSystem::FileSystem()
 	}
 }
 
-std::ifstream* FileSystem::openFile(FS_DRIVE drive, std::string path) {
+std::ifstream* FileSystem::openFile(Drive drive, std::string path) {
 	std::ifstream* fs;
 	std::string driveName;
 	switch (drive) {
@@ -22,13 +22,17 @@ std::ifstream* FileSystem::openFile(FS_DRIVE drive, std::string path) {
 		fs = new std::ifstream("sdmc:" + path);
 		break;
 	default:
-		Error::throwError("Tried to open file on unknown drive.");
+		Error::throwError("Attempted to open file on unimplemented drive.");
 	}
 	if (!*fs) {
 		delete fs;
 		Error::throwError("Cannot open file <" + drive + path + ">");
 	}
 	return fs;
+}
+
+std::string FileSystem::getDataDirPath() {
+	return "/F3Z_Data";
 }
 
 

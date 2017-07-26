@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-enum FS_DRIVE {
+enum Drive {
 	FS_SDMC,
 	FS_ROMFS
 };
@@ -17,7 +17,9 @@ public:
 	~FileSystem();
 
 	/* Open a filestream on the FileSystem*/
-	std::ifstream* openFile(FS_DRIVE drive, std::string path);
+	std::ifstream* openFile(Drive drive, std::string path);
+
+	std::string getDataDirPath();
 
 };
 

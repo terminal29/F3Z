@@ -5,7 +5,7 @@ Game::Game()
 	log_ = new Log();
 	fs_ = new FileSystem();
 	audio_ = new Audio();
-	renderManager_ = new RenderManager();
+	renderManager_ = &RenderManager::instance();
 }
 
 Game::~Game()
@@ -13,14 +13,14 @@ Game::~Game()
 	delete log_;
 	delete fs_;
 	delete audio_;
-	delete renderManager_;
+	// not deleting rendermanager as it is a singleton
 }
 
 // Initialize the Game
 Game Game::instance_;
 
 void Game::run() {
-	// do all the things
+
 }
 
 Game& Game::instance() {
@@ -37,4 +37,8 @@ Log& Game::getLog() {
 
 FileSystem& Game::getFS() {
 	return *fs_;
+}
+
+RenderManager& Game::getRenderManager() {
+	return *renderManager_;
 }

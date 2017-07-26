@@ -6,6 +6,9 @@
 #include "FileSystem.h"
 #include "Audio.h"
 
+// Forward decl because Log includes Game includes Log includes...
+class Log;
+
 class Game
 {
 public:
