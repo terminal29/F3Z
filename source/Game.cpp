@@ -20,7 +20,7 @@ Game::~Game()
 Game Game::instance_;
 
 void Game::run() {
-
+	log_->writeLine(LOG_GENERAL, "TEST");
 }
 
 Game& Game::instance() {

@@ -11,16 +11,17 @@ enum Logfile {
 	LOG_LOGIC
 };
 
+
 class Log
 {
 public:
 	Log();
 	~Log();
 	
-	//template <typename T>
-	//void writeLine(Logfile l, T data);
+	
+	void writeLine(Logfile l, std::string data);
 
 private:
-	std::string logFolder_ = "/F3Z_Data";
+	std::string logFolder_ = "/logs";
 };
 

@@ -3,19 +3,18 @@
 Log::Log()
 {
 }
-/*
-template <typename T>
-void Log::writeLine(Logfile l, T data) {
-	std::ifstream* lfile;
+
+void Log::writeLine(Logfile l, std::string data) {
+	std::fstream* lfile;
 	switch (l) {
 	case LOG_GENERAL:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirPath() + logFolder_ + "/logGeneral.log");
+		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() +  "/logGeneral.log");
 		break;
 	case LOG_GRAPHICS:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirPath() + logFolder_ + "/logGraphics.log");
+		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() + "/logGraphics.log");
 		break;
 	case LOG_LOGIC:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirPath() + logFolder_ + "/logLogic.log");
+		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() + "/logLogic.log");
 		break;
 	default:
 		Error::throwError("Attempted to log an unimplemented log type.");
@@ -25,7 +24,7 @@ void Log::writeLine(Logfile l, T data) {
 	delete lfile;
 	//done
 }
-*/
+
 
 Log::~Log()
 {

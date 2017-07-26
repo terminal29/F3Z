@@ -26,7 +26,7 @@ RenderManager::RenderManager()
 	vshader_dvlb = DVLB_ParseFile((u32*)v_default_shbin, v_default_shbin_size);
 	shaderProgramInit(&defaultShaderProgram_);
 	shaderProgramSetVsh(&defaultShaderProgram_, &vshader_dvlb->DVLE[0]);
-
+	//linearFree(vshader_dvlb); //Unsure if this is allowed
 
 }
 
@@ -47,6 +47,8 @@ C3D_RenderTarget* RenderManager::getRenderTarget(RenderTarget target) {
 
 RenderManager::~RenderManager()
 {
+	C3D_Fini();
+	gfxExit();
 }
 
 RenderManager RenderManager::instance_;

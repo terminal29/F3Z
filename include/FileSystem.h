@@ -17,9 +17,9 @@ public:
 	~FileSystem();
 
 	/* Open a filestream on the FileSystem*/
-	std::ifstream* openFile(Drive drive, std::string path);
+	std::fstream* openFile(Drive drive, std::string path);
 
-	std::string getDataDirPath();
+	std::string getDataDirName();
 
 };
 
