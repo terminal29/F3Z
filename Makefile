@@ -1,7 +1,6 @@
 export DEVKITPRO = C:/devkitPro
 export DEVKITARM = C:/devkitPro/devkitARM
 
-
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ LIBS	:= -lcitro3d -lctru -lm
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CTRULIB)
+LIBDIRS	:= $(CTRULIB) $(PORTLIB)
 
 
 #---------------------------------------------------------------------------------
