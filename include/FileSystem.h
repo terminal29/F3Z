@@ -19,6 +19,7 @@ public:
 	/* Open a filestream on the FileSystem*/
 	std::fstream* openFile(Drive drive, std::string path);
 
+	/* returns the directory name for the games data store on the SD card, preceded by a / */
 	std::string getDataDirName();
 
 };

@@ -1,8 +1,18 @@
 #pragma once
+
 class Component
 {
 public:
+
+	enum MessageType {
+		MSG_UPDATE,
+		MSG_RENDER
+	};
+	
 	virtual ~Component() {}
-	virtual void receive(int message) = 0;
+	virtual void receive(Entity& e, MessageType msg) = 0;
+	virtual std::string getType() = 0;
+
+	bool enabled_ = true;
 };
 

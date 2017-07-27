@@ -1,6 +1,9 @@
 #pragma once
 
-#include "../Error.h"
+#include "Error.h"
+#include "entity/component/Model.h"
+#include "entity/component/Transform.h"
+
 #include <citro3d.h>
 #include <3ds.h>
 
@@ -15,14 +18,24 @@
 enum RenderTarget {
 	RT_TOPLEFT,
 	RT_TOPRIGHT,
-	RT_BOTTOM
+	RT_TOP,
+	RT_BOTTOM,
+	RT_ALL
 };
 
 class RenderManager
 {
 public:
+
+	/* Returns a reference to the RenderManager instance */
 	static RenderManager& instance();
+
+	/* Returns a pointer to an initialized rendertarget */
 	C3D_RenderTarget* getRenderTarget(RenderTarget target);
+	
+	/* Renders a model with the default shader*/
+	void renderModel(Model model, Transform transform, RenderTarget target);
+
 
 private:
 	RenderManager();
@@ -45,5 +58,5 @@ private:
 		GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGBA8) | \
 		GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
 
-
+	const float separationMultiplier_ = 0.5;
 };

@@ -1,10 +1,12 @@
 #pragma once
 
-#include "render/RenderManager.h"
+#include "RenderManager.h"
 #include "Error.h"
 #include "Log.h"
 #include "FileSystem.h"
 #include "Audio.h"
+#include "entity\Entity.h"
+#include "entity\component\RenderComponent.h"
 
 // Forward decl because Log includes Game includes Log includes...
 class Log;

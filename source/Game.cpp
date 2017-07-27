@@ -13,7 +13,7 @@ Game::~Game()
 	delete log_;
 	delete fs_;
 	delete audio_;
-	// not deleting rendermanager as it is a singleton
+	// not deleting rendermanager as it is a singleton and will delete itself
 }
 
 // Initialize the Game
@@ -21,6 +21,28 @@ Game Game::instance_;
 
 void Game::run() {
 	log_->writeLine(LOG_GENERAL, "TEST");
+	Entity testEntity;
+	Model testModel;
+	
+	Model::vertex testVerts[6] = {
+		// First triangle
+		{ { -0.5f, -0.5f, +0.5f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, +1.0f } },
+		{ { +0.5f, -0.5f, +0.5f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, +1.0f } },
+		{ { +0.5f, +0.5f, +0.5f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, +1.0f } },
+		// Second triangle
+		{ { +0.5f, +0.5f, +0.5f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, +1.0f } },
+		{ { -0.5f, +0.5f, +0.5f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, +1.0f } },
+		{ { -0.5f, -0.5f, +0.5f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, +1.0f } }
+	};
+
+	testModel.setVertices(&testVerts[0], 6);
+
+	RenderComponent rc;
+	testEntity.addComponent(&rc);
+
+	while (aptMainLoop()) {
+	
+	}
 }
 
 Game& Game::instance() {
