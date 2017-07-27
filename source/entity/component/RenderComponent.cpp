@@ -9,6 +9,8 @@ RenderComponent::~RenderComponent()
 {
 }
 
+const std::string RenderComponent::typeName("RenderComponent");
+
 void RenderComponent::receive(Entity& e, Component::MessageType type) {
 	if (!enabled_)
 		return;
@@ -23,5 +25,5 @@ void RenderComponent::render(Entity& e, RenderTarget target) {
 }
 
 std::string RenderComponent::getType() {
-	return "RenderComponent";
+	return typeName;
 }

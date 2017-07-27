@@ -17,6 +17,9 @@ public:
 	//Nothing stored so nothing to remove
 	virtual ~RenderComponent();
 
+
+	static const std::string typeName;
+
 private:
 	virtual void render(Entity& e, RenderTarget target);
 };

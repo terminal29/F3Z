@@ -40,8 +40,13 @@ void Game::run() {
 	RenderComponent rc;
 	testEntity.addComponent(&rc);
 
+	RenderComponent* rc_;
+	if (testEntity.hasComponent(RenderComponent::typeName)) {
+		rc_ = (RenderComponent*)testEntity.getComponent(RenderComponent::typeName);
+	}
+
 	while (aptMainLoop()) {
-	
+		
 	}
 }
 

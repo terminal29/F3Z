@@ -14,5 +14,9 @@ public:
 	virtual std::string getType() = 0;
 
 	bool enabled_ = true;
+
+protected:
+	// To stop instantiation leading to calling getType() = 0
+	Component() {};
 };
 
