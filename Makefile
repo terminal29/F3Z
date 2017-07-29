@@ -32,9 +32,9 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/render source/entity source/entity/component
+SOURCES		:=	source source/render source/entity source/entity/component source/library
 DATA		:=	data
-INCLUDES	:=	include include/render include/entity include/entity/component
+INCLUDES	:=	include include/render include/entity include/entity/component include/library
 ROMFS		:=	romfs
 
 #---------------------------------------------------------------------------------

@@ -81,6 +81,6 @@ void Model::setTexture(C3D_Tex texture) {
 	texture_ = texture;
 }
 
-const C3D_Tex* Model::getTexture() {
+C3D_Tex* Model::getTexture() {
 	return &texture_;
 }

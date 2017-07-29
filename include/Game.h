@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Globals.h"
+#include "Loader.h"
 #include "entity\Entity.h"
 #include "entity\component\RenderComponent.h"
 

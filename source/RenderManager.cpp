@@ -111,7 +111,11 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	BufInfo_Init(bufInfo);
 	BufInfo_Add(bufInfo, model.getVBO(), sizeof(Model::vertex), 3, 0x210);
 
-	C3D_TexBind(0, const_cast<C3D_Tex*>(model.getTexture()));
+	C3D_TexBind(0, model.getTexture());
+	
+	char info[30];
+	sprintf(info, "%d", model.getNumVertices());
+	Globals::log_.writeLine(Logfile::LOG_GRAPHICS, info);
 
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
@@ -125,10 +129,10 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	vec3f eulerAngles = transform.getEulerRotation(),
 		position = transform.getPos();
 
-	Mtx_Scale(&modelView, scale, scale, scale);
-	Mtx_RotateX(&modelView, eulerAngles.x, true);
-	Mtx_RotateY(&modelView, eulerAngles.y, true);
-	Mtx_RotateZ(&modelView, eulerAngles.z, true);
+	//Mtx_Scale(&modelView, scale, scale, scale);
+	//Mtx_RotateX(&modelView, eulerAngles.x, true);
+	//Mtx_RotateY(&modelView, eulerAngles.y, true);
+	//Mtx_RotateZ(&modelView, eulerAngles.z, true);
 	Mtx_Translate(&modelView, position.x, position.y, position.z, true);
 	
 	// Update the uniforms

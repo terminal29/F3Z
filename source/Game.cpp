@@ -34,7 +34,15 @@ void Game::run() {
 
 	testModel.setVertices(&testVerts[0], 6);
 
+	Bitmap b = Loader::loadToBitmap("assets/textures/Home.png");
+	C3D_Tex testTex;
+	C3D_TexInit(&testTex, b.width, b.height, GPU_TEXCOLOR::GPU_RGBA8);
+	Loader::bitmapToTiled(b, &testTex);
+
+	testModel.setTexture(testTex);
 	testEntity.setModel(testModel);
+
+	
 
 	RenderComponent rc;
 	testEntity.addComponent(&rc);
@@ -49,7 +57,11 @@ void Game::run() {
 	while (aptMainLoop()) {
 		/* Do everything here*/
 
-
+		Transform t = testEntity.getTransform();
+		vec3f pos = t.getPos();
+		pos.z = 5 * sinf(osGetTime() / 100);
+		t.setPos(pos);
+		testEntity.setTransform(t);
 
 		/* Then call render on all gameobjects */
 		Globals::renderManager_.beginFrame();

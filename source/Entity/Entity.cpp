@@ -21,6 +21,7 @@ Model Entity::getModel() {
 
 void Entity::setModel(Model model) {
 	model_ = model;
+	model_.setDirty();
 }
 
 bool Entity::addComponent(Component* component) {

@@ -31,7 +31,7 @@ public:
 	void setTexture(C3D_Tex texture);
 
 	/* Returns the current texture (Note: getTexture returns a C3D_Tex that is in tiled format so to do anything meaningful with it you will need to convert it to bitmap)*/
-	const C3D_Tex* getTexture();
+	C3D_Tex* getTexture();
 
 private:
 	void* VBO_ = nullptr;
