@@ -33,6 +33,10 @@ public:
 	/* Returns a pointer to an initialized rendertarget */
 	C3D_RenderTarget* getRenderTarget(RenderTarget target);
 	
+	void beginFrame();
+
+	void endFrame();
+
 	/* Renders a model with the default shader*/
 	void renderModel(Model model, Transform transform, RenderTarget target);
 

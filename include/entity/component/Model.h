@@ -9,6 +9,7 @@ public:
 	~Model();
 
 	Model(const Model& old);
+	Model& operator=(const Model& rhs);
 
 	typedef struct { float position[3]; float texcoord[2]; float normal[3]; } vertex;
 
@@ -37,6 +38,6 @@ private:
 	bool VBODirty_ = true;
 	C3D_Tex texture_;
 	vertex* vertices_ = nullptr;
-	int numVerts_;
+	int numVerts_ = 0;
 };
 

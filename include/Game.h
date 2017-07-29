@@ -1,38 +1,18 @@
 #pragma once
 
-#include "RenderManager.h"
-#include "Error.h"
-#include "Log.h"
-#include "FileSystem.h"
-#include "Audio.h"
+#include "Globals.h"
 #include "entity\Entity.h"
 #include "entity\component\RenderComponent.h"
-
-// Forward decl because Log includes Game includes Log includes...
-class Log;
 
 class Game
 {
 public:
 	static Game& instance();
-
-	Log& getLog();
-	FileSystem& getFS();
-	Audio& getAudio();
-	RenderManager& getRenderManager();
-
 	void run();
-	
+
 private:
+	static Game instance_;
 	Game();
 	~Game();
-
-	static Game instance_;
-	Log* log_;
-	FileSystem* fs_;
-	Audio* audio_;
-	RenderManager* renderManager_;
-	
-
 };
 

@@ -1,4 +1,4 @@
-#include "FileSystem.h"
+#include "Globals.h"
 
 FileSystem::FileSystem()
 {
@@ -46,7 +46,7 @@ FileSystem::FileSystem()
 
 }
 
-std::fstream* FileSystem::openFile(Drive drive, std::string path) {
+FILE* FileSystem::openFile(Drive drive, std::string path) {
 	std::fstream* fs;
 	std::string driveName;
 	switch (drive) {
@@ -60,13 +60,12 @@ std::fstream* FileSystem::openFile(Drive drive, std::string path) {
 		Error::throwError("Attempted to open file on unimplemented drive.");
 	}
 	FILE* fi = fopen((driveName + path).c_str(), "ab+"); //Make sure the file exists
-	fclose(fi);
-	fs = new std::fstream(driveName + path);
-	if (!(*fs).is_open()) {
-		delete fs;
+	if (!fi) {
+		delete fi;
 		Error::throwError("Cannot open file <" + driveName + path + ">");
+		// exec stop
 	}
-	return fs;
+	return fi;
 }
 
 std::string FileSystem::getDataDirName() {
@@ -78,3 +77,11 @@ FileSystem::~FileSystem()
 {
 	romfsExit();
 }
+
+
+FileSystem FileSystem::instance_;
+
+FileSystem& FileSystem::instance() {
+	return instance_;
+}
+

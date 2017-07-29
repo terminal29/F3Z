@@ -1,4 +1,4 @@
-#include "RenderManager.h"
+#include "Globals.h"
 
 
 RenderManager::RenderManager()
@@ -56,8 +56,22 @@ RenderManager& RenderManager::instance() {
 	return instance_;
 }
 
+void RenderManager::beginFrame() {
+	if (!gfxIs3D()) {
+		gfxSet3D(true);
+	}
+	C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+}
+
+void RenderManager::endFrame() {
+	C3D_FrameEnd(0);
+	gspWaitForVBlank();
+}
+
 
 void RenderManager::renderModel(Model model, Transform transform, RenderTarget target) {
+	if (model.getNumVertices() < 1)
+		return;
 
 	// Uniform locations
 	int uLoc_projection, uLoc_modelView;
@@ -85,7 +99,7 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	uLoc_lightHalfVec = shaderInstanceGetUniformLocation(defaultShaderProgram_.vertexShader, "lightHalfVec");
 	uLoc_lightClr = shaderInstanceGetUniformLocation(defaultShaderProgram_.vertexShader, "lightClr");
 	uLoc_material = shaderInstanceGetUniformLocation(defaultShaderProgram_.vertexShader, "material");
-
+	
 	// Configure attributes for use with the vertex shader
 	C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
 	AttrInfo_Init(attrInfo);
@@ -123,7 +137,7 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, 0.0f, 0.0f, -1.0f, 0.0f);
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightHalfVec, 0.0f, 0.0f, -1.0f, 0.0f);
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
-
+	
 	if (target == RT_TOPLEFT || target == RT_TOP || target == RT_ALL) {
 		Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(80.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
@@ -145,6 +159,8 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 		C3D_DrawArrays(GPU_TRIANGLES, 0, model.getNumVertices());
 	}
 
+	C3D_FrameEnd(0);
+	
 	linearFree(attrInfo);
 	linearFree(bufInfo);
 	linearFree(env);

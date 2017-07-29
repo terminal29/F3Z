@@ -15,13 +15,15 @@ enum Logfile {
 class Log
 {
 public:
-	Log();
-	~Log();
 	
-	
+	static Log& instance();
 	void writeLine(Logfile l, std::string data);
 
 private:
+	static Log instance_;
+
+	Log();
+	~Log();
 	std::string logFolder_ = "/logs";
 };
 

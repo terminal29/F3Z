@@ -18,7 +18,7 @@ void Transform::setPos(vec3f position) {
 }
 
 vec3f Transform::getEulerRotation() {
-	return eulerAngles_
+	return eulerAngles_;
 }
 
 void Transform::setEulerRotation(vec3f rotation) {

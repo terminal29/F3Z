@@ -13,14 +13,17 @@ enum Drive {
 class FileSystem
 {
 public:
-	FileSystem();
-	~FileSystem();
+
+	static FileSystem& instance();
 
 	/* Open a filestream on the FileSystem*/
-	std::fstream* openFile(Drive drive, std::string path);
+	FILE* openFile(Drive drive, std::string path);
 
 	/* returns the directory name for the games data store on the SD card, preceded by a / */
 	std::string getDataDirName();
-
+private:
+	static FileSystem instance_;
+	FileSystem();
+	~FileSystem();
 };
 

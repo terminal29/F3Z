@@ -1,5 +1,10 @@
 #pragma once
 
+#include <string>
+
+// Forward decl to stop recursive inclusion
+class Entity;
+
 class Component
 {
 public:

@@ -1,26 +1,23 @@
-#include "Game.h"
+#include "Globals.h"
 
 Game::Game()
 {
-	log_ = new Log();
-	fs_ = new FileSystem();
-	audio_ = new Audio();
-	renderManager_ = &RenderManager::instance();
 }
 
 Game::~Game()
 {
-	delete log_;
-	delete fs_;
-	delete audio_;
-	// not deleting rendermanager as it is a singleton and will delete itself
 }
 
-// Initialize the Game
 Game Game::instance_;
 
+Game& Game::instance() {
+	return instance_;
+}
+
+
 void Game::run() {
-	log_->writeLine(LOG_GENERAL, "TEST");
+
+	// Create a test entity and model
 	Entity testEntity;
 	Model testModel;
 	
@@ -37,35 +34,30 @@ void Game::run() {
 
 	testModel.setVertices(&testVerts[0], 6);
 
+	testEntity.setModel(testModel);
+
 	RenderComponent rc;
 	testEntity.addComponent(&rc);
 
 	RenderComponent* rc_;
 	if (testEntity.hasComponent(RenderComponent::typeName)) {
 		rc_ = (RenderComponent*)testEntity.getComponent(RenderComponent::typeName);
+	} // should succeed
+	else {
+		Error::throwError("Assertion failed: RenderComponent could not be found after adding to entity");
 	}
-
 	while (aptMainLoop()) {
-		
+		/* Do everything here*/
+
+
+
+		/* Then call render on all gameobjects */
+		Globals::renderManager_.beginFrame();
+		//for (unsigned int i = 0; i < entities.size(); i++){
+		//	if(entities.at(i).hasComponent(RenderComponent::typeName)){
+				((RenderComponent*)testEntity.getComponent(RenderComponent::typeName))->receive(testEntity,Component::MessageType::MSG_RENDER);
+		//	}
+		//}
+		Globals::renderManager_.endFrame();
 	}
-}
-
-Game& Game::instance() {
-	return instance_;
-}
-
-Audio& Game::getAudio() {
-	return *audio_;
-}
-
-Log& Game::getLog() {
-	return *log_;
-}
-
-FileSystem& Game::getFS() {
-	return *fs_;
-}
-
-RenderManager& Game::getRenderManager() {
-	return *renderManager_;
 }

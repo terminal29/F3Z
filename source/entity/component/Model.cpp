@@ -1,4 +1,5 @@
 #include "entity/component/Model.h"
+#include "Globals.h"
 
 Model::Model()
 {
@@ -16,19 +17,23 @@ Model::~Model()
 }
 
 Model::Model(const Model& old) {
+	*this = old;
+}
 
-	// Copy vertices
-	if (old.vertices_ != nullptr) {
-		setVertices(old.vertices_, old.numVerts_);
+Model& Model::operator=(const Model& rhs) {
+	if (this != &rhs) {
+		// Copy vertices
+		if (rhs.vertices_ != nullptr) {
+			setVertices(rhs.vertices_, rhs.numVerts_);
+		}
+
+		// Copy texture
+		setTexture(rhs.texture_);
+
+		// Ensure new VBO is created
+		setDirty();
 	}
-
-	// Copy texture
-	setTexture(old.texture_);
-	
-	// Ensure new VBO is created
-	setDirty();
-
-
+	return *this;
 }
 
 const void* Model::getVBO() {
@@ -60,6 +65,8 @@ void Model::setVertices(vertex* newVerts, int numVerts) {
 	//copy new verts in
 	memcpy(vertices_, newVerts, sizeof(vertex) * numVerts);
 	numVerts_ = numVerts;
+	
+	
 }
 
 const Model::vertex* Model::getVertices() {

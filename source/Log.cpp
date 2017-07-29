@@ -1,31 +1,40 @@
-#include "Log.h"
+#include "Globals.h"
 
 Log::Log()
 {
 }
 
+Log::~Log()
+{
+}
+
 void Log::writeLine(Logfile l, std::string data) {
-	std::fstream* lfile;
+	FILE* lfile;
 	switch (l) {
 	case LOG_GENERAL:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() +  "/logGeneral.log");
+		lfile = Globals::fs_.openFile(FS_SDMC, Globals::fs_.getDataDirName() +  "/logGeneral.log");
 		break;
 	case LOG_GRAPHICS:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() + "/logGraphics.log");
+		lfile = Globals::fs_.openFile(FS_SDMC, Globals::fs_.getDataDirName() + "/logGraphics.log");
 		break;
 	case LOG_LOGIC:
-		lfile = Game::instance().getFS().openFile(FS_SDMC, Game::instance().getFS().getDataDirName() + "/logLogic.log");
+		lfile = Globals::fs_.openFile(FS_SDMC, Globals::fs_.getDataDirName() + "/logLogic.log");
 		break;
 	default:
 		Error::throwError("Attempted to log an unimplemented log type.");
 		//halt exec
 	}
-	*lfile << data << std::endl;
-	delete lfile;
+	fseek(lfile, 0, SEEK_END);
+	fwrite((data).c_str(), sizeof(char), data.size(), lfile);
+	fwrite(std::string("\n").c_str(), sizeof(char), 1, lfile);
+	fclose(lfile);
 	//done
 }
 
 
-Log::~Log()
-{
+Log Log::instance_;
+
+Log& Log::instance() {
+	return instance_;
 }
+

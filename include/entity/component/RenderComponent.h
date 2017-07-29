@@ -3,13 +3,14 @@
 #include "Component.h"
 #include "../Entity.h"
 #include "RenderManager.h"
+#include "Globals.h"
 
 class RenderComponent :public Component{
 public:
 	RenderComponent();
 
 	// Called whenever a message is broadcasted
-	virtual void receive(Entity& e, MessageType type);
+	virtual void receive(Entity& e, MessageType type) override;
 	
 	// hacky RTTI
 	virtual std::string getType() override;

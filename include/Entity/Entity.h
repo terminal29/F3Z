@@ -5,7 +5,6 @@
 
 #include <vector>
 
-
 class Entity
 {
 public:
@@ -28,8 +27,6 @@ public:
 
 	/* Check if this entity has a component of a type */
 	bool hasComponent(std::string componentType);
-
-
 
 private:
 	Model model_;
