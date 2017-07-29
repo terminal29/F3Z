@@ -47,7 +47,10 @@ FileSystem::FileSystem()
 }
 
 FILE* FileSystem::openFile(Drive drive, std::string path) {
-	std::fstream* fs;
+	return openFile(drive, path, "ab+");
+}
+
+FILE* FileSystem::openFile(Drive drive, std::string path, std::string flags) {
 	std::string driveName;
 	switch (drive) {
 	case FS_ROMFS:
@@ -59,10 +62,10 @@ FILE* FileSystem::openFile(Drive drive, std::string path) {
 	default:
 		Error::throwError("Attempted to open file on unimplemented drive.");
 	}
-	FILE* fi = fopen((driveName + path).c_str(), "ab+"); //Make sure the file exists
-	if (!fi) {
-		delete fi;
-		Error::throwError("Cannot open file <" + driveName + path + ">");
+	FILE* fi = fopen((driveName + path).c_str(), flags.c_str()); //Make sure the file exists
+	if (fi == NULL) {
+		
+		Error::throwError("Cannot open file <" + driveName + path + ">\n" + strerror(errno));
 		// exec stop
 	}
 	return fi;

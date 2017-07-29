@@ -3,6 +3,7 @@
 #include <string>
 #include "library/lodepng.h"
 #include <citro3d.h>
+#include "entity/component/Model.h"
 
 struct Bitmap {
 	unsigned char* pixels;
@@ -14,6 +15,9 @@ public:
 	static Bitmap loadToBitmap(std::string filepath);
 	static void bitmapToTiled(unsigned char* inImage, unsigned long inImgWidth, unsigned long inImgHeight, C3D_Tex* outImage);
 	static void bitmapToTiled(Bitmap inImage, C3D_Tex* outImage);
+
+	static Model loadOBJ(std::string filepath);
+
 private:
 	Loader();
 	~Loader();

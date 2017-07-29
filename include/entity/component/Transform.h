@@ -1,6 +1,11 @@
 #pragma once
 
-typedef struct vec3f { float x = 0, y = 0, z = 0; } vec3f;
+typedef struct vec3f { 
+	float x = 0, 
+		y = 0, 
+		z = 0; 
+	vec3f(float x_, float y_, float z_) :x(x_),y(y_),z(z_) {}
+} vec3f;
 
 class Transform
 {
@@ -18,8 +23,8 @@ public:
 	void setScale(float scale);
 
 private:
-	vec3f position_;
-	vec3f eulerAngles_;
-	float scale_;
+	vec3f position_ = vec3f( 0.0f, 0.0f, 0.0f );
+	vec3f eulerAngles_ = vec3f(0.0f,0.0f,0.0f );
+	float scale_ = 1;
 };
 

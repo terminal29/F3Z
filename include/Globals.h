@@ -7,6 +7,14 @@
 #include "FileSystem.h"
 #include "RenderManager.h"
 
+enum WorldRotation {
+	WR_NORTH = 0,
+	WR_EAST = 15707963267,
+	WR_SOUTH = 31415926535,
+	WR_WEST = -15707963267
+};
+
+
 //Namespace for storing globals
 namespace Globals {
 	static Game& theGame_ = Game::instance();
@@ -14,4 +22,6 @@ namespace Globals {
 	static FileSystem& fs_ = FileSystem::instance();
 	static Audio& audio_ = Audio::instance();
 	static RenderManager& renderManager_ = RenderManager::instance();
+	static volatile double worldRotationState = 0;
+	static volatile float currentWorldRotation = 0;
 }

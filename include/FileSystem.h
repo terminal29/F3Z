@@ -16,9 +16,12 @@ public:
 
 	static FileSystem& instance();
 
-	/* Open a filestream on the FileSystem*/
+	/* Open a filestream on the FileSystem in ab+ */
 	FILE* openFile(Drive drive, std::string path);
-
+	
+	/* Open a filestream on the FileSystem */
+	FILE* openFile(Drive drive, std::string path, std::string flags);
+	
 	/* returns the directory name for the games data store on the SD card, preceded by a / */
 	std::string getDataDirName();
 private:

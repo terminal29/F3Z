@@ -65,7 +65,7 @@ void RenderManager::beginFrame() {
 
 void RenderManager::endFrame() {
 	C3D_FrameEnd(0);
-	gspWaitForVBlank();
+	//gspWaitForVBlank();
 }
 
 
@@ -113,27 +113,22 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 
 	C3D_TexBind(0, model.getTexture());
 	
-	char info[30];
-	sprintf(info, "%d", model.getNumVertices());
-	Globals::log_.writeLine(Logfile::LOG_GRAPHICS, info);
-
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
 	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
-	C3D_Mtx modelView;
-	Mtx_Identity(&modelView);
-
 	float scale = transform.getScale();
 	vec3f eulerAngles = transform.getEulerRotation(),
 		position = transform.getPos();
 
-	//Mtx_Scale(&modelView, scale, scale, scale);
-	//Mtx_RotateX(&modelView, eulerAngles.x, true);
-	//Mtx_RotateY(&modelView, eulerAngles.y, true);
-	//Mtx_RotateZ(&modelView, eulerAngles.z, true);
+	C3D_Mtx modelView;
+	Mtx_Identity(&modelView);
+	Mtx_Scale(&modelView, scale, scale, scale);
 	Mtx_Translate(&modelView, position.x, position.y, position.z, true);
+	Mtx_RotateX(&modelView, eulerAngles.x, true);
+	Mtx_RotateY(&modelView, eulerAngles.y, true);
+	Mtx_RotateZ(&modelView, eulerAngles.z, true);
 	
 	// Update the uniforms
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &modelView);
@@ -143,27 +138,27 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
 	
 	if (target == RT_TOPLEFT || target == RT_TOP || target == RT_ALL) {
-		Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(80.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
+		Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
 		C3D_FrameDrawOn(targetTopLeft_);
 		C3D_DrawArrays(GPU_TRIANGLES, 0, model.getNumVertices());
 	}
 
 	if (target == RT_TOPRIGHT || target == RT_TOP || target == RT_ALL) {
-		Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(80.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, separationMultiplier_ * osGet3DSliderState(), 2.0f, false);
+		Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, separationMultiplier_ * osGet3DSliderState(), 2.0f, false);
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
 		C3D_FrameDrawOn(targetTopRight_);
 		C3D_DrawArrays(GPU_TRIANGLES, 0, model.getNumVertices());
 	}
 
 	if (target == RT_BOTTOM || target == RT_ALL) {
-		Mtx_PerspTilt(&projection, C3D_AngleFromDegrees(80.0f), C3D_AspectRatioBot, 0.01f, 1000.0f, false);
+		Mtx_PerspTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioBot, 0.01f, 1000.0f, false);
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
 		C3D_FrameDrawOn(targetBottom_);
 		C3D_DrawArrays(GPU_TRIANGLES, 0, model.getNumVertices());
 	}
 
-	C3D_FrameEnd(0);
+	
 	
 	linearFree(attrInfo);
 	linearFree(bufInfo);
