@@ -87,7 +87,7 @@ Model Loader::loadOBJ(std::string filepath) {
 	}
 	
 	std::vector <Model::vertex> vertices;
-
+	Model::vertex vert;
 	// Loop over shapes
 	for (size_t s = 0; s < shapes.size(); s++) {
 		// Loop over faces(polygon)
@@ -98,7 +98,7 @@ Model Loader::loadOBJ(std::string filepath) {
 			// Loop over vertices in the face.
 			for (size_t v = 0; v < fv; v++) {
 				// access to vertex
-				Model::vertex vert;
+				
 				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 				vert.position[0] = attrib.vertices[3 * idx.vertex_index + 0];
 				vert.position[1] = attrib.vertices[3 * idx.vertex_index + 1];

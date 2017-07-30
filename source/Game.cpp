@@ -1,4 +1,4 @@
-#include "Globals.h"
+#include "Game.h"
 
 Game::Game()
 {
@@ -45,10 +45,10 @@ void Game::run() {
 			break;
 
 		if (kDown & KEY_L) {
-			Globals::worldRotationState += (float)3.14159265358979/2;
+			World::rotateWorld(false);
 		}
 		if (kDown & KEY_R) {
-			Globals::worldRotationState -= (float)3.14159265358979/2;
+			World::rotateWorld(true);
 		}
 
 		circlePosition cP;
@@ -64,13 +64,12 @@ void Game::run() {
 			pos.x -= (float)cP.dx / 750;
 		}
 
-		rot.y = Globals::currentWorldRotation;
+		rot.y = World::currentWorldRotation;
 		t.setEulerRotation(rot);
 		t.setPos(pos);
 		testEntity.setTransform(t);
 
-		Globals::currentWorldRotation = lerpAngle(Globals::worldRotationState, (double)Globals::currentWorldRotation, 0.7);
-
+		World::updateWorldRotation();
 
 		/* Then call render on all gameobjects */
 		Globals::renderManager_.beginFrame();

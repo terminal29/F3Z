@@ -6,22 +6,21 @@
 #include "Log.h"
 #include "FileSystem.h"
 #include "RenderManager.h"
+#include "World.h"
 
-enum WorldRotation {
-	WR_NORTH = 0,
-	WR_EAST = 15707963267,
-	WR_SOUTH = 31415926535,
-	WR_WEST = -15707963267
-};
-
+/* Forward declare all the stuff */
+class Game;
+class Log;
+class Audio;
+class FileSystem;
+class RenderManager;
 
 //Namespace for storing globals
 namespace Globals {
-	static Game& theGame_ = Game::instance();
-	static Log& log_ = Log::instance();
-	static FileSystem& fs_ = FileSystem::instance();
-	static Audio& audio_ = Audio::instance();
-	static RenderManager& renderManager_ = RenderManager::instance();
-	static volatile double worldRotationState = 0;
-	static volatile float currentWorldRotation = 0;
+	extern Game& theGame_;
+	extern Log& log_;
+	extern FileSystem& fs_;
+	extern Audio& audio_;
+	extern RenderManager& renderManager_;
+	
 }

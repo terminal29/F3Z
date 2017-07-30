@@ -4,6 +4,7 @@
 #include <3ds.h>
 #include <fstream>
 #include <string>
+#include <string.h> /* for strerror */
 
 enum Drive {
 	FS_SDMC,
