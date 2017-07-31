@@ -1,7 +1,8 @@
 #pragma once
 
+#include <vector>
 #include "Globals.h"
-#include "Loader.h"
+#include "loaders/Loader.h"
 #include "entity\Entity.h"
 #include "entity\component\RenderComponent.h"
 

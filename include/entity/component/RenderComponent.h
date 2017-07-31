@@ -3,7 +3,9 @@
 #include "Component.h"
 #include "../Entity.h"
 #include "RenderManager.h"
+#include "Types.h"
 #include "Globals.h"
+
 
 class RenderComponent :public Component{
 public:

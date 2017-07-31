@@ -11,6 +11,10 @@ public:
 	Entity();
 	~Entity();
 
+
+	Entity(Model model, Transform t);
+	Entity(Model model);
+
 	/* Transform getters & setters */
 	Transform getTransform();
 	void setTransform(Transform transform);

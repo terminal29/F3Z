@@ -1,6 +1,6 @@
 #include "World.h"
 
-#define PI 3.1415926535f
+const float PI = 3.1415926535f;
 
 namespace World {
 	WorldRotation worldRotationState = WR_NORTH;
@@ -24,14 +24,8 @@ namespace World {
 		targetWorldRotation = radiansFromState(worldRotationState);
 	}
 
-	inline bool inRange(float val, float target, float range) {
-		return (val > target - range) && (val < target + range);
-	}
-
 	void updateWorldRotation() {
-
-			int angle_in_degrees = (( ( ( (int)(targetWorldRotation*(180/PI)) - (int)(currentWorldRotation*(180 / PI)) ) % 360) + 540) % 360) - 180;
-			currentWorldRotation = angle_in_degrees * (PI/180) * 0.1f;
+		currentWorldRotation = targetWorldRotation;
 		
 	}
 

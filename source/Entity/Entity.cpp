@@ -4,6 +4,14 @@ Entity::Entity()
 {
 }
 
+Entity::Entity(Model model, Transform t) :model_(model), transform_(t)
+{
+}
+
+Entity::Entity(Model model) : model_(model) 
+{
+}
+
 Entity::~Entity()
 {
 }

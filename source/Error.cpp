@@ -9,6 +9,7 @@ Error::~Error()
 }
 
 void Error::throwError(std::string errText) {
+	Globals::log_.writeLine(Logfile::LOG_GENERAL, errText);
 	errorConf err;
 	errorInit(&err, errorType::ERROR_TEXT_WORD_WRAP, CFG_Language::CFG_LANGUAGE_EN);
 	errorText(&err, errText.c_str());

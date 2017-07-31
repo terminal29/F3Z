@@ -68,6 +68,13 @@ void RenderManager::endFrame() {
 	//gspWaitForVBlank();
 }
 
+void RenderManager::finishRenderLayer() {
+	C3D_FrameSplit(0);
+	C3D_FrameBufClear(&(targetTopLeft_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+	C3D_FrameBufClear(&(targetTopRight_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+	C3D_FrameBufClear(&(targetBottom_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+}
+
 
 void RenderManager::renderModel(Model model, Transform transform, RenderTarget target) {
 	if (model.getNumVertices() < 1)
@@ -111,6 +118,7 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	BufInfo_Init(bufInfo);
 	BufInfo_Add(bufInfo, model.getVBO(), sizeof(Model::vertex), 3, 0x210);
 
+	
 	C3D_TexBind(0, model.getTexture());
 	
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
@@ -133,7 +141,7 @@ void RenderManager::renderModel(Model model, Transform transform, RenderTarget t
 	// Update the uniforms
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &modelView);
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_material, &material);
-	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, 0.0f, 0.0f, -1.0f, 0.0f);
+	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, -1.0f, -1.0f, -1.0f, 0.0f);
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightHalfVec, 0.0f, 0.0f, -1.0f, 0.0f);
 	C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
 	

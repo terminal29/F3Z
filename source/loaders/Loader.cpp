@@ -1,4 +1,4 @@
-#include "Loader.h"
+#include "loaders/Loader.h"
 
 
 #define TINYOBJLOADER_IMPLEMENTATION 
@@ -121,3 +121,73 @@ Model Loader::loadOBJ(std::string filepath) {
 
 	return model;
 }
+
+std::vector<StaticTile> Loader::loadStaticTiles(std::string islandName) {
+	std::vector<StaticTile> islandTiles;
+	std::string tilesetJson;
+	std::string islandJson;
+
+
+	/* Load tileset config */
+	FILE* tilesetJsonFile = Globals::fs_.openFile(Drive::FS_ROMFS, "config/tiles.json", "r");
+	if (!tilesetJsonFile)
+		Error::throwError("Cannot open tileset config file\n<romfs:config/tiles.json>");
+
+	/* Load island config */
+	FILE* islandJsonFile = Globals::fs_.openFile(Drive::FS_ROMFS, "islands/" + islandName + ".json", "r");
+	if (!islandJsonFile)
+		Error::throwError("Cannot open island config file\n<romfs:islands/" + islandName + " .json>");
+
+	/* Read json */
+	fseek(tilesetJsonFile, 0, SEEK_END);
+	long tilesetFileSize = ftell(tilesetJsonFile);
+	fseek(tilesetJsonFile, 0, SEEK_SET);
+	tilesetJson.resize(tilesetFileSize);
+	fread(&tilesetJson[0], sizeof(char), tilesetFileSize, tilesetJsonFile);
+
+	fseek(islandJsonFile, 0, SEEK_END);
+	long islandFileSize = ftell(islandJsonFile);
+	fseek(islandJsonFile, 0, SEEK_SET);
+	islandJson.resize(islandFileSize);
+	fread(&islandJson[0], sizeof(char), islandFileSize, islandJsonFile);
+
+	Json::Reader reader;
+
+	Json::Value
+		tilesetRoot,
+		islandRoot;
+
+	bool valid = reader.parse(tilesetJson, tilesetRoot);
+	if(!valid)
+		Error::throwError("<romfs:config/tiles.json> had invalid json:\n" + reader.getFormattedErrorMessages());
+
+	valid = reader.parse(islandJson, islandRoot);
+	if (!valid)
+		Error::throwError("<romfs:islands/" + islandName + ".json> had invalid json:\n" + reader.getFormattedErrorMessages());
+
+	for (auto itr : islandRoot["tileset"]) {
+		
+		/* Only do static tiles */
+		if (tilesetRoot["tileData"]["static"].isMember(itr.asString())) {
+			StaticTile t;
+			t.canRotate = tilesetRoot["tileData"]["static"][itr.asString()].isMember("canRotate") ? tilesetRoot["tileData"]["static"][itr.asString()]["canRotate"].asBool() : false;
+
+			std::string tileTexFilePath = tilesetRoot["tileData"]["static"][itr.asString()].isMember("texPath") ? tilesetRoot["tileData"]["static"][itr.asString()]["texPath"].asString() : "";
+			if (tileTexFilePath.size() < 1)
+				Error::throwError(itr.asString() + " has no texPath.");
+			
+			Bitmap b = loadToBitmap(tileTexFilePath);
+			C3D_Tex* tex = new C3D_Tex;
+			bitmapToTiled(b, tex);
+			t.tileTex = tex;
+			
+			islandTiles.push_back(t);
+		}
+	}
+
+	fclose(islandJsonFile);
+	fclose(tilesetJsonFile);
+	return islandTiles;
+
+}
+
