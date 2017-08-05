@@ -32,9 +32,9 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/render source/entity source/entity/component source/library source/loaders source/library/json
+SOURCES		:=	source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++
 DATA		:=	data
-INCLUDES	:=	include include/render include/entity include/entity/component include/library include/loaders include/library/json
+INCLUDES	:=	include include/render include/entity include/entity/component include/library include/utilities include/utilities/voxel include/library/json include/c3d++
 ROMFS		:=	romfs
 
 #---------------------------------------------------------------------------------
@@ -42,14 +42,15 @@ ROMFS		:=	romfs
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -O3 -mword-relocations \
+CFLAGS	:=	-g -Wall -Werror=return-type -O1 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=gnu++11 \
-			-ftree-loop-distribution -funroll-loops \
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=gnu++11 
+
+OPTIMISE	:= -ftree-loop-distribution -funroll-loops \
 			-ffast-math -faggressive-loop-optimizations \
 			-finline-small-functions -findirect-inlining
 			

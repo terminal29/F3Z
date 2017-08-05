@@ -1,6 +1,11 @@
-#include "entity/component/RenderComponent.h"
+#include <entity/component/RenderComponent.h>
+#include <entity/Entity.h>
 
-RenderComponent::RenderComponent()
+RenderComponent::RenderComponent():RenderComponent(C3DRenderTarget::TOP)
+{
+}
+
+RenderComponent::RenderComponent(C3DRenderTarget target):target_(target)
 {
 }
 
@@ -16,12 +21,15 @@ void RenderComponent::receive(Entity& e, Component::MessageType type) {
 		return;
 
 	if (type == MessageType::MSG_RENDER) {
-		render(e, RenderTarget::RT_TOP);
+		render(e);
 	}
 }
 
-void RenderComponent::render(Entity& e, RenderTarget target) {
-	RenderManager::instance().renderModel(e.getModel(), e.getTransform(), target);
+void RenderComponent::render(Entity& e) {
+	C3DRenderer::setTarget(target_);
+	C3DModel m = e.getModel();
+	C3DTransform t = e.getTransform();
+	C3DRenderer::draw(m, t);
 }
 
 std::string RenderComponent::getType() {

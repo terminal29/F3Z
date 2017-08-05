@@ -1,17 +1,11 @@
 #pragma once
+#include <Types.h>
 
-typedef struct vec3f { 
-	float x = 0, 
-		y = 0, 
-		z = 0; 
-	vec3f(float x_, float y_, float z_) :x(x_),y(y_),z(z_) {}
-} vec3f;
-
-class Transform
+class C3DTransform
 {
 public:
-	Transform();
-	~Transform();
+	C3DTransform();
+	~C3DTransform();
 
 	vec3f getPos();
 	void setPos(vec3f position);

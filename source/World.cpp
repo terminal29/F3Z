@@ -1,4 +1,4 @@
-#include "World.h"
+#include <World.h>
 
 const float PI = 3.1415926535f;
 
@@ -40,5 +40,6 @@ namespace World {
 		case WR_SOUTH:
 			return PI;
 		}
+		return 0;
 	}
 }

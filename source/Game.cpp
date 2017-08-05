@@ -1,7 +1,8 @@
-#include "Game.h"
+#include <Game.h>
 
 Game::Game()
 {
+	C3DRenderer::initRenderer();
 }
 
 Game::~Game()
@@ -15,65 +16,36 @@ Game& Game::instance() {
 }
 
 void Game::run() {
-	 
-
-	std::vector<StaticTile> tiles = Loader::loadStaticTiles("home");
-
-	Bitmap 
-		homeBitmap = 
-		Loader::loadToBitmap("assets/textures/Home.png"),
-		backgroundBitmap =  
-		Loader::loadToBitmap("assets/textures/BackgroundDay.png");
-
-	C3D_Tex 
-		homeTex, 
-		backgroundTex;
-
-	Loader::bitmapToTiled(homeBitmap, &homeTex);
-	Loader::bitmapToTiled(backgroundBitmap, &backgroundTex);
-
-	Model  
-		homeModel = Loader::loadOBJ("assets/models/Home.obj"),
-		backgroundModel = Loader::loadOBJ("assets/models/BackgroundDay.obj");
-
-	homeModel.setTexture(homeTex);
-	backgroundModel.setTexture(backgroundTex);
-
-	Entity 
-		homeVillage(homeModel), 
-		backgroundDay(backgroundModel);
-
-	Transform t = homeVillage.getTransform();
-	t.setPos(vec3f(0, -6, -16));
-	homeVillage.setTransform(t);
-
-	t = backgroundDay.getTransform();
-	t.setPos(vec3f(0, 0, -4));
-	t.setEulerRotation(vec3f(0, 0, 0));
-	t.setScale(1);
-	backgroundDay.setTransform(t);
-
-	RenderComponent
-		homeVillageRC,
-		backgroundRC;
-
-	homeVillage.addComponent(&homeVillageRC);
-	backgroundDay.addComponent(&backgroundRC);
-
-	std::vector<Entity*> 
-		backgroundEntities,
-		worldEntities,
-		foregroundEntities;
-
-	//worldEntities.push_back(&backgroundDay);
-	//worldEntities.push_back(&homeVillage);
 	
-	backgroundEntities.push_back(&backgroundDay);
+
+	// load a texture
+	C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
+	C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/BackgroundDay.png");
+
+	// load an OBJ file
+	C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
+	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/BackgroundDay.obj");
+
+	// Create a model
+	C3DModel homeModel(homeMesh, homeTexture);
+	C3DModel skyModel(skyMesh, skyTexture);
+
+	// Create and set some transforms
+	C3DTransform skyTransform;
+	skyTransform.setPos({ 0,0,-4 });
+	skyTransform.setScale(1);
+
+	C3DTransform homeTransform;
+	homeTransform.setPos({ 0, -6, -16 });
+
+	// Create some models
+	Entity home(homeModel, homeTransform);
+
 
 
 	while (aptMainLoop()) {
-		Globals::log_.profileStart(__func__);
-		/* Do everything here*/
+
+		/*
 		hidScanInput();
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
@@ -86,7 +58,6 @@ void Game::run() {
 			World::rotateWorld(true);
 		}
 
-		/* Camera controls */
 		circlePosition cP;
 		hidCircleRead(&cP);
 		Transform t = homeVillage.getTransform();
@@ -98,7 +69,6 @@ void Game::run() {
 		if (cP.dx > 25 || cP.dx < -25) {
 			pos.x -= (float)cP.dx / 750;
 		}
-		//
 
 		rot.y = World::currentWorldRotation;
 		t.setEulerRotation(rot);
@@ -108,7 +78,6 @@ void Game::run() {
 		World::updateWorldRotation();
 
 		Globals::renderManager_.beginFrame();
-		/* Render Background */
 		for (unsigned int i = 0; i < backgroundEntities.size(); i++) {
 			if (backgroundEntities.at(i)->hasComponent(RenderComponent::typeName)) {
 				((RenderComponent*)backgroundEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*backgroundEntities.at(i), Component::MessageType::MSG_RENDER);
@@ -116,24 +85,34 @@ void Game::run() {
 		}
 
 		Globals::renderManager_.finishRenderLayer();
-		/* Render Entities */
 		for (unsigned int i = 0; i < worldEntities.size(); i++){
 			if(worldEntities.at(i)->hasComponent(RenderComponent::typeName)){
 				((RenderComponent*)worldEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*worldEntities.at(i),Component::MessageType::MSG_RENDER);
 			}
 		}
 		Globals::renderManager_.finishRenderLayer();
-		/* Render GUI */
+
 		for (unsigned int i = 0; i < foregroundEntities.size(); i++) {
 			if (foregroundEntities.at(i)->hasComponent(RenderComponent::typeName)) {
 				((RenderComponent*)foregroundEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*foregroundEntities.at(i), Component::MessageType::MSG_RENDER);
 			}
 		}
+		*/
 
+		C3DTransform t;
+		t.setPos(vec3f(0, -6, -16));
+
+		C3DRenderer::beginFrame();
+		C3DRenderer::setTarget(C3DRenderTarget::TOP);
+		C3DRenderer::draw(skyModel, skyTransform);
+		C3DRenderer::nextLayer();
+		C3DRenderer::draw(homeModel, homeTransform);
+		C3DRenderer::endFrame();
+		/*
 
 		Globals::renderManager_.endFrame();
 		Globals::log_.profileEnd(__func__);
+	*/
 	}
-	Globals::log_.profileOutput();
 
 }

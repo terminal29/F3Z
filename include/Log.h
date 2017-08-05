@@ -1,18 +1,17 @@
 #pragma once
 
-#include "FileSystem.h"
-#include "Game.h"
+#include <FileSystem.h>
 #include <string>
 #include <iostream>
 #include <chrono>
 #include <sstream>
+#include <vector>
 
 enum Logfile {
 	LOG_GENERAL,
 	LOG_GRAPHICS,
 	LOG_LOGIC
 };
-
 
 class Log
 {
@@ -39,6 +38,5 @@ private:
 
 	Log();
 	~Log();
-	std::string logFolder_ = "/logs";
 };
 

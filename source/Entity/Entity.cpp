@@ -1,14 +1,14 @@
-#include "entity/Entity.h"
+#include <entity/Entity.h>
 
 Entity::Entity()
 {
 }
 
-Entity::Entity(Model model, Transform t) :model_(model), transform_(t)
+Entity::Entity(C3DModel model, C3DTransform transform) :model_(model), transform_(transform)
 {
 }
 
-Entity::Entity(Model model) : model_(model) 
+Entity::Entity(C3DModel model) : model_(model)
 {
 }
 
@@ -16,20 +16,19 @@ Entity::~Entity()
 {
 }
 
-Transform Entity::getTransform() {
+C3DTransform Entity::getTransform() {
 	return transform_;
 }
-void Entity::setTransform(Transform transform) {
+void Entity::setTransform(C3DTransform transform) {
 	transform_ = transform;
 }
 
-Model Entity::getModel() {
+C3DModel Entity::getModel() {
 	return model_;
 }
 
-void Entity::setModel(Model model) {
+void Entity::setModel(C3DModel model) {
 	model_ = model;
-	model_.setDirty();
 }
 
 bool Entity::addComponent(Component* component) {
@@ -58,3 +57,7 @@ Component* Entity::getComponent(std::string componentType) {
 	return nullptr;
 }
 
+bool Entity::removeComponent(std::string componentType) {
+	// TODO
+	return false;
+}

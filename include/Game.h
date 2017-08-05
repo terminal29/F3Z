@@ -1,10 +1,13 @@
 #pragma once
 
 #include <vector>
-#include "Globals.h"
-#include "loaders/Loader.h"
-#include "entity\Entity.h"
-#include "entity\component\RenderComponent.h"
+
+#include <c3d++/C3DModel.h>
+#include <c3d++/C3DRenderer.h>
+
+#include <Loader.h>
+#include <entity/Entity.h>
+#include <entity/component/RenderComponent.h>
 
 class Game
 {

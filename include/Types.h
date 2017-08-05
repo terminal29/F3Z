@@ -1,20 +1,18 @@
 #pragma once
-enum RenderTarget {
-	RT_TOPLEFT = 0,
-	RT_TOPRIGHT,
-	RT_TOP,
-	RT_BOTTOM,
-	RT_ALL
+
+struct vec3f {
+	float
+		x = 0,
+		y = 0,
+		z = 0;
+	vec3f() {};
+	vec3f(float x, float y, float z) :x(x), y(y), z(z) {};
 };
 
-struct Bitmap {
-	unsigned char* pixels;
-	unsigned int width = 0, height = 0, datalen = 0;
+struct vec2f {
+	float
+		x = 0,
+		y = 0;
+	vec2f() {};
+	vec2f(float x, float y) :x(x), y(y) {};
 };
-
-typedef struct StaticTile {
-	/* If a tile's texture is allowed to be randomly rotated */
-	bool canRotate = true;
-	/* Tile's texture */
-	C3D_Tex* tileTex;
-} StaticTile;

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Error.h"
-#include <3ds.h>
 #include <fstream>
 #include <string>
 #include <string.h> /* for strerror */
+
+#include <Error.h>
+#include <3ds.h>
 
 enum Drive {
 	FS_SDMC,

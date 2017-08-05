@@ -1,9 +1,9 @@
 #pragma once
-#include "component\Component.h"
-#include "component/Model.h"
-#include "component/Transform.h"
-
 #include <vector>
+
+#include <entity/component/Component.h>
+#include <c3d++/C3DModel.h>
+#include <c3d++/C3DTransform.h>
 
 class Entity
 {
@@ -11,17 +11,16 @@ public:
 	Entity();
 	~Entity();
 
-
-	Entity(Model model, Transform t);
-	Entity(Model model);
-
+	Entity(C3DModel model);
+	Entity(C3DModel model, C3DTransform transform);
+	
 	/* Transform getters & setters */
-	Transform getTransform();
-	void setTransform(Transform transform);
+	C3DTransform getTransform();
+	void setTransform(C3DTransform transform);
 
 	/* Model getters & setters */
-	Model getModel();
-	void setModel(Model model);
+	C3DModel getModel();
+	void setModel(C3DModel model);
 
 	/* Add a component to this entity, fails if there is already a component of that type attached to the entity */
 	bool addComponent(Component* component);
@@ -29,12 +28,15 @@ public:
 	/* Get the pointer to a component */
 	Component* getComponent(std::string componentType);
 
+	/* Delete a component (not implemented yet) */
+	bool removeComponent(std::string componentType);
+
 	/* Check if this entity has a component of a type */
 	bool hasComponent(std::string componentType);
 
 private:
-	Model model_;
-	Transform transform_;
+	C3DModel model_;
+	C3DTransform transform_;
 	std::vector<Component*> components_;
 
 };

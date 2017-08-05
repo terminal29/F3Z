@@ -2,7 +2,6 @@
 
 #include <string>
 
-// Forward decl to stop recursive inclusion
 class Entity;
 
 class Component
@@ -14,8 +13,10 @@ public:
 		MSG_RENDER
 	};
 	
-	virtual ~Component() {}
+	virtual ~Component() {};
+
 	virtual void receive(Entity& e, MessageType msg) = 0;
+
 	virtual std::string getType() = 0;
 
 	bool enabled_ = true;
