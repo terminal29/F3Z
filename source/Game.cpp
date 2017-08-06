@@ -20,99 +20,92 @@ void Game::run() {
 
 	// load a texture
 	C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
-	C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/BackgroundDay.png");
+	C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/Skybox1.png");
 
 	// load an OBJ file
 	C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
-	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/BackgroundDay.obj");
+	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
 
 	// Create a model
 	C3DModel homeModel(homeMesh, homeTexture);
 	C3DModel skyModel(skyMesh, skyTexture);
-
+	
 	// Create and set some transforms
 	C3DTransform skyTransform;
-	skyTransform.setPos({ 0,0,-4 });
-	skyTransform.setScale(1);
+	skyTransform.setPos({ 0,0,0 });
+	skyTransform.setScale(10);
 
 	C3DTransform homeTransform;
-	homeTransform.setPos({ 0, -6, -16 });
+	homeTransform.setPos({ 0,0,0 });
 
 	// Create some models
 	Entity home(homeModel, homeTransform);
+	Entity sky(skyModel, skyTransform);
 
+	// Set the camera to this transform
+	C3DTransform camera;
+	camera.setPos(vec<float,3>(0, 0, 10));
+	C3DRenderer::setCameraTransform(camera);
 
+	home.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+	sky.addComponent(new RenderComponent(C3DRenderTarget::TOP, true));
 
+	std::vector<Entity*> backgroundLayer;
+	std::vector<Entity*> midLayer;
+	std::vector<Entity*> foregroundLayer;
+
+	backgroundLayer.push_back(&sky);
+	midLayer.push_back(&home);
+
+	consoleInit(gfxScreen_t::GFX_BOTTOM, consoleGetDefault());
+	int t;
 	while (aptMainLoop()) {
+		t++;
 
-		/*
 		hidScanInput();
 		u32 kDown = hidKeysDown();
+		u32 kHeld = hidKeysHeld();
 		if (kDown & KEY_START)
 			break;
 
-		if (kDown & KEY_L) {
-			World::rotateWorld(false);
+		circlePosition analogStick;
+		hidCircleRead(&analogStick);
+		
+		if ((analogStick.dy > 25 || analogStick.dy < -25)) {
+			camera.setYPR(camera.getYPR() + vec<float, 3>(0, analogStick.dy / 5000.0, 0));
 		}
-		if (kDown & KEY_R) {
-			World::rotateWorld(true);
+		if ((analogStick.dx > 25 || analogStick.dx < -25)) {
+			camera.setYPR(camera.getYPR() + vec<float, 3>(-analogStick.dx / 5000.0, 0, 0));
 		}
-
-		circlePosition cP;
-		hidCircleRead(&cP);
-		Transform t = homeVillage.getTransform();
-		vec3f rot = t.getEulerRotation();
-		vec3f pos = t.getPos();
-		if (cP.dy > 25 || cP.dy < - 25) {
-			pos.y -= (float)cP.dy / 500;
+		
+		if (kHeld & KEY_L) {
+			camera.setPos(camera.getPos() + camera.getForward());
 		}
-		if (cP.dx > 25 || cP.dx < -25) {
-			pos.x -= (float)cP.dx / 750;
+		else if (kHeld & KEY_R) {
+			camera.setPos(camera.getPos() - camera.getForward());
 		}
+		// Lock skybox to camera
 
-		rot.y = World::currentWorldRotation;
-		t.setEulerRotation(rot);
-		t.setPos(pos);
-		homeVillage.setTransform(t);
-
-		World::updateWorldRotation();
-
-		Globals::renderManager_.beginFrame();
-		for (unsigned int i = 0; i < backgroundEntities.size(); i++) {
-			if (backgroundEntities.at(i)->hasComponent(RenderComponent::typeName)) {
-				((RenderComponent*)backgroundEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*backgroundEntities.at(i), Component::MessageType::MSG_RENDER);
-			}
-		}
-
-		Globals::renderManager_.finishRenderLayer();
-		for (unsigned int i = 0; i < worldEntities.size(); i++){
-			if(worldEntities.at(i)->hasComponent(RenderComponent::typeName)){
-				((RenderComponent*)worldEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*worldEntities.at(i),Component::MessageType::MSG_RENDER);
-			}
-		}
-		Globals::renderManager_.finishRenderLayer();
-
-		for (unsigned int i = 0; i < foregroundEntities.size(); i++) {
-			if (foregroundEntities.at(i)->hasComponent(RenderComponent::typeName)) {
-				((RenderComponent*)foregroundEntities.at(i)->getComponent(RenderComponent::typeName))->receive(*foregroundEntities.at(i), Component::MessageType::MSG_RENDER);
-			}
-		}
-		*/
-
-		C3DTransform t;
-		t.setPos(vec3f(0, -6, -16));
+		sky.getTransform().setYPR(sky.getTransform().getYPR() + vec<float, 3>(-0.001f, 0, 0));
+		sky.getTransform().setPos(camera.getPos());
+		home.getTransform().setPos(vec<float, 3>{0, 1 * cos(t/100.0), 0});
 
 		C3DRenderer::beginFrame();
-		C3DRenderer::setTarget(C3DRenderTarget::TOP);
-		C3DRenderer::draw(skyModel, skyTransform);
-		C3DRenderer::nextLayer();
-		C3DRenderer::draw(homeModel, homeTransform);
-		C3DRenderer::endFrame();
-		/*
 
-		Globals::renderManager_.endFrame();
-		Globals::log_.profileEnd(__func__);
-	*/
+		for (Entity* entity : backgroundLayer) {
+			entity->receive(MessageType::MSG_RENDER);
+		}
+		C3DRenderer::nextLayer();
+		for (Entity* entity : midLayer) {
+			entity->receive(MessageType::MSG_RENDER);
+		}
+		C3DRenderer::nextLayer();
+		for (Entity* entity : foregroundLayer) {
+			entity->receive(MessageType::MSG_RENDER);
+		}
+
+		C3DRenderer::endFrame();
+
 	}
 
 }

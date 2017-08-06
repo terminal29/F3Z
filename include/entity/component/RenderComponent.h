@@ -6,6 +6,7 @@ class RenderComponent :public Component{
 public:
 	RenderComponent();
 	RenderComponent(C3DRenderTarget target);
+	RenderComponent(C3DRenderTarget target, bool shadeless);
 
 	virtual void receive(Entity& e, MessageType type) override;
 	
@@ -18,5 +19,6 @@ public:
 private:
 	virtual void render(Entity& e);
 	C3DRenderTarget target_;
+	bool shadeless_ = false;
 };
 

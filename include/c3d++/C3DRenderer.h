@@ -27,9 +27,13 @@ namespace C3DRenderer {
 
 	void beginFrame();
 
+	void setCameraTransform(C3DTransform& cameraTransform);
+
 	void endFrame();
 
 	void setTarget(C3DRenderTarget target);
+
+	void drawNextShadeless();
 
 	void draw(C3DModel& model, C3DTransform& transform);
 

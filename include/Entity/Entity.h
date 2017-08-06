@@ -15,12 +15,14 @@ public:
 	Entity(C3DModel model, C3DTransform transform);
 	
 	/* Transform getters & setters */
-	C3DTransform getTransform();
+	C3DTransform& getTransform();
 	void setTransform(C3DTransform transform);
 
 	/* Model getters & setters */
-	C3DModel getModel();
+	C3DModel& getModel();
 	void setModel(C3DModel model);
+
+	void receive(MessageType type);
 
 	/* Add a component to this entity, fails if there is already a component of that type attached to the entity */
 	bool addComponent(Component* component);

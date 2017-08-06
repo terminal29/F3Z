@@ -15,6 +15,19 @@ namespace C3DRenderer {
 		const float separationMultiplier_ = 0.3;
 
 		C3DRenderTarget currentTarget = C3DRenderTarget::TOP;
+
+		bool hasSetCamera_ = false;
+		C3DTransform* cameraTransform_ = new C3DTransform();
+
+		bool shadeless_ = false;
+	}
+
+	void setCameraTransform(C3DTransform& cameraTransform) {
+		if (!local::hasSetCamera_) {
+			delete local::cameraTransform_;
+			local::hasSetCamera_ = true;
+		}
+		local::cameraTransform_ = &cameraTransform;
 	}
 
 	void initRenderer() {
@@ -64,6 +77,10 @@ namespace C3DRenderer {
 		local::currentTarget = target;
 	}
 
+	void drawNextShadeless() {
+		local::shadeless_ = true;
+	}
+
 	void draw(C3DModel& model, C3DTransform& transform) {
 		draw(model.getMesh(), model.getTexture(), transform);
 	}
@@ -76,18 +93,30 @@ namespace C3DRenderer {
 		int uLoc_projection, uLoc_modelView;
 		int uLoc_lightVec, uLoc_lightHalfVec, uLoc_lightClr, uLoc_material;
 		C3D_Mtx projection;
-
+		
 		// Create a material for the model
-		C3D_Mtx material =
-		{
-			{
-				{ { 0.0f, 0.2f, 0.2f, 0.2f } }, // Ambient
-				{ { 0.0f, 0.4f, 0.4f, 0.4f } }, // Diffuse
-				{ { 0.0f, 0.8f, 0.8f, 0.8f } }, // Specular
-				{ { 1.0f, 0.0f, 0.0f, 0.0f } }, // Emission
-			}
-		};
-
+		C3D_Mtx material;
+		
+		if (local::shadeless_) {
+			material = {
+				{
+					{ { 0.0f, 0.2f, 0.2f, 0.2f } }, // Ambient
+					{ { 0.0f, 0.4f, 0.4f, 0.4f } }, // Diffuse
+					{ { 0.0f, 0.8f, 0.8f, 0.8f } }, // Specular
+					{ { 1.0f, 1.0f, 1.0f, 1.0f } }, // Emission
+				}
+			};
+			local::shadeless_ = false;
+		}else {
+			material = {
+						{
+							{ { 0.0f, 0.2f, 0.2f, 0.2f } }, // Ambient
+							{ { 0.0f, 0.4f, 0.4f, 0.4f } }, // Diffuse
+							{ { 0.0f, 0.8f, 0.8f, 0.8f } }, // Specular
+							{ { 1.0f, 0.0f, 0.0f, 0.0f } }, // Emission
+						}
+			};
+		}
 		//Bind the default shaderprogram
 		C3D_BindProgram(&local::defaultShaderProgram_);
 
@@ -110,7 +139,7 @@ namespace C3DRenderer {
 		BufInfo_Init(bufInfo);
 		BufInfo_Add(bufInfo, mesh.getVBO(), sizeof(Vertex), 3, 0x210);
 
-
+		C3D_CullFace(GPU_CULLMODE::GPU_CULL_FRONT_CCW);
 		C3D_TexBind(0, texture.getCTexture());
 
 		C3D_TexEnv* env = C3D_GetTexEnv(0);
@@ -118,20 +147,69 @@ namespace C3DRenderer {
 		C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
 		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
-		float scale = transform.getScale();
-		vec3f eulerAngles = transform.getEulerRotation(),
-			position = transform.getPos();
 
-		C3D_Mtx modelView;
-		Mtx_Identity(&modelView);
-		Mtx_Scale(&modelView, scale, scale, scale);
-		Mtx_Translate(&modelView, position.x, position.y, position.z, true);
-		Mtx_RotateX(&modelView, eulerAngles.x, true);
-		Mtx_RotateY(&modelView, eulerAngles.y, true);
-		Mtx_RotateZ(&modelView, eulerAngles.z, true);
+		/* Matrix stuff */
+		/*
+		glm::mat4 matRoll = glm::mat4(1.0f);//identity matrix;
+		glm::mat4 matPitch = glm::mat4(1.0f);//identity matrix
+		glm::mat4 matYaw = glm::mat4(1.0f);//identity matrix
 
+		//roll, pitch and yaw are used to store our angles in our class
+		matRoll = glm::rotate(matRoll, roll, glm::vec3(0.0f, 0.0f, 1.0f));
+		matPitch = glm::rotate(matPitch, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+		matYaw = glm::rotate(matYaw, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		//order matters
+		glm::mat4 rotate = mattRoll * matPitch * matYaw;
+
+		glm::mat4 translate = glm::mat4(1.0f);
+		translate = glm::translate(translate, -eyeVector);
+
+		viewMatrix = rotate * translate;
+		*/
+		
+		/* VIEW MATRIX */
+		vec<float, 3> cYPR = local::cameraTransform_->getYPR();
+		vec<float, 3> cPos = local::cameraTransform_->getPos();
+
+		mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3>{0, 1, 0},-cYPR.x));
+		mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3>{1, 0, 0}, -cYPR.y));
+		mat<float, 4, 4> cMatRoll = rotation_matrix(rotation_quat(vec<float, 3>{0, 0, 1}, -cYPR.z));
+		mat<float, 4, 4> cMatPos = translation_matrix(-cPos);
+		
+		mat<float, 4, 4> cMatYPR = mul(cMatRoll, mul(cMatPitch, cMatYaw));
+
+		mat<float, 4, 4> viewMat = mul(cMatYPR, cMatPos);
+
+		/* MODEL MATRIX */
+		vec<float, 3> mYPR = transform.getYPR();
+		vec<float, 3> mPos = transform.getPos();
+		float mScale = transform.getScale();
+
+		mat<float, 4, 4> mMatYaw = rotation_matrix(rotation_quat(vec<float, 3>{0, 1, 0}, mYPR.x));
+		mat<float, 4, 4> mMatPitch = rotation_matrix(rotation_quat(vec<float, 3>{1, 0, 0}, mYPR.y));
+		mat<float, 4, 4> mMatRoll = rotation_matrix(rotation_quat(vec<float, 3>{0, 0, 1}, mYPR.z));
+		mat<float, 4, 4> mMatPos = translation_matrix(mPos);
+		mat<float, 4, 4> mMatScale = scaling_matrix(vec<float, 3>{mScale, mScale, mScale});
+
+		mat<float, 4, 4> mMatYPR = mul(mMatRoll, mul(mMatPitch, mMatYaw));
+
+		mat<float, 4, 4> modelMat = mul(mul(mMatPos, mMatScale), mMatYPR);
+
+		mat<float, 4, 4> modelViewMat = mul(viewMat, modelMat);
+
+		C3D_Mtx C3D_ModelViewMat;
+		for (int i = 0; i < 4; i++) {
+			C3D_ModelViewMat.m[i*4 + 0] = modelViewMat.row(i).w;
+			C3D_ModelViewMat.m[i * 4 + 1] = modelViewMat.row(i).x;
+			C3D_ModelViewMat.m[i * 4 + 2] = modelViewMat.row(i).y;
+			C3D_ModelViewMat.m[i * 4 + 3] = modelViewMat.row(i).z;
+		}
+
+		/* */
+		
 		// Update the uniforms
-		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &modelView);
+		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &C3D_ModelViewMat);
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_material, &material);
 		C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, -1.0f, -1.0f, -1.0f, 0.0f);
 		C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightHalfVec, 0.0f, 0.0f, -1.0f, 0.0f);

@@ -34,7 +34,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++
 DATA		:=	data
-INCLUDES	:=	include include/render include/entity include/entity/component include/library include/utilities include/utilities/voxel include/library/json include/c3d++
+INCLUDES	:=	include
 ROMFS		:=	romfs
 
 #---------------------------------------------------------------------------------

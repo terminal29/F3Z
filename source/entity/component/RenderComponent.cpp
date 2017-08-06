@@ -9,6 +9,10 @@ RenderComponent::RenderComponent(C3DRenderTarget target):target_(target)
 {
 }
 
+RenderComponent::RenderComponent(C3DRenderTarget target, bool shadeless) : target_(target), shadeless_(shadeless)
+{
+}
+
 
 RenderComponent::~RenderComponent()
 {
@@ -16,7 +20,7 @@ RenderComponent::~RenderComponent()
 
 const std::string RenderComponent::typeName("RenderComponent");
 
-void RenderComponent::receive(Entity& e, Component::MessageType type) {
+void RenderComponent::receive(Entity& e, MessageType type) {
 	if (!enabled_)
 		return;
 
@@ -27,9 +31,9 @@ void RenderComponent::receive(Entity& e, Component::MessageType type) {
 
 void RenderComponent::render(Entity& e) {
 	C3DRenderer::setTarget(target_);
-	C3DModel m = e.getModel();
-	C3DTransform t = e.getTransform();
-	C3DRenderer::draw(m, t);
+	if (shadeless_)
+		C3DRenderer::drawNextShadeless();
+	C3DRenderer::draw(e.getModel(), e.getTransform());
 }
 
 std::string RenderComponent::getType() {

@@ -6,9 +6,9 @@
 #include <library/lodepng.h>
 #include <citro3d.h>
 #include <library/json/json.h>
+#include <library/linalg.h>
 
 #include <c3d++/C3DModel.h>
-#include <Types.h>
 #include <Error.h>
 
 namespace Loader2 {

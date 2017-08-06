@@ -9,6 +9,8 @@
 #include <entity/Entity.h>
 #include <entity/component/RenderComponent.h>
 
+#include <utilities\Time.h>
+
 class Game
 {
 public:

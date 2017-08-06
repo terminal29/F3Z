@@ -1,15 +1,16 @@
 #pragma once
 #include <vector>
 #include <3ds.h>
-#include <Types.h>
+#include <library/linalg.h>
 
+using namespace linalg;
 
 struct Vertex {
-	vec3f position = { 0,0,0 };
-	vec2f texcoord = { 0,0 };
-	vec3f normal = { 0,0,0 };
+	vec<float,3> position = { 0,0,0 };
+	vec<float,2> texcoord = { 0,0 };
+	vec<float,3> normal = { 0,0,0 };
 	Vertex() {};
-	Vertex(vec3f position, vec2f texcoord, vec3f normal) :position(position), texcoord(texcoord), normal(normal) {};
+	Vertex(vec<float, 3> position, vec<float, 2> texcoord, vec<float, 3> normal) :position(position), texcoord(texcoord), normal(normal) {};
 };
 
 class C3DMesh {

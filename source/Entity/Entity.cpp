@@ -16,19 +16,25 @@ Entity::~Entity()
 {
 }
 
-C3DTransform Entity::getTransform() {
+C3DTransform& Entity::getTransform() {
 	return transform_;
 }
 void Entity::setTransform(C3DTransform transform) {
 	transform_ = transform;
 }
 
-C3DModel Entity::getModel() {
+C3DModel& Entity::getModel() {
 	return model_;
 }
 
 void Entity::setModel(C3DModel model) {
 	model_ = model;
+}
+
+void Entity::receive(MessageType message) {
+	for (Component* component : components_) {
+		component->receive(*this, message);
+	}
 }
 
 bool Entity::addComponent(Component* component) {

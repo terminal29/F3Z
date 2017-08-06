@@ -4,15 +4,15 @@
 
 class Entity;
 
+enum class MessageType {
+	MSG_UPDATE,
+	MSG_RENDER
+};
+
 class Component
 {
 public:
 
-	enum MessageType {
-		MSG_UPDATE,
-		MSG_RENDER
-	};
-	
 	virtual ~Component() {};
 
 	virtual void receive(Entity& e, MessageType msg) = 0;
