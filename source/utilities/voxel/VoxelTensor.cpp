@@ -81,13 +81,23 @@ void VoxelTensor::loadFromFile(std::string filepath) {
 			Error::throwError(voxelType + " does not have a valid \"texPath\"");
 		}
 
+		if (!voxelData[voxelType].isMember("uvSize") || !voxelData[voxelType]["uvSize"].isInt()) {
+			Error::throwError(voxelType + " does not have a valid \"uvSize\"");
+		}
+
+		if (!voxelData[voxelType].isMember("uvPos") || !voxelData[voxelType]["uvPos"].isArray() || voxelData[voxelType]["uvPos"].size() != 2) {
+			Error::throwError(voxelType + " does not have a valid \"uvPos\"");
+		}
+
 		VoxelType newType;
 		newType.texture = Loader2::loadTexture(voxelData[voxelType]["texPath"].asString());
 		newType.typeName = voxelType;
+		newType.uvPos = std::array<int, 2>{voxelData[voxelType]["uvPos"][0].asInt(), voxelData[voxelType]["uvPos"][1].asInt()};
+		newType.uvSize = voxelData[voxelType]["uvSize"].asInt();
 
 		// for each position
 		for (Json::Value position : voxelTypes[voxelType]) {
-			linalg::vec<int, 4> voxelInstance = { position[0].asInt(), position[1].asInt(),position[2].asInt(), types_.size() }; // TODO add to voxelTypes if not in already
+			std::array<int, 4> voxelInstance = { position[0].asInt(), position[1].asInt(),position[2].asInt(), types_.size() }; // TODO add to voxelTypes if not in already
 			array_.push_back(voxelInstance);
 		}
 		types_.push_back(newType);
@@ -198,10 +208,10 @@ std::vector<Vertex> createCube(int x, int y, int z, float uv_x, float uv_y, floa
 void VoxelTensor::createMesh() {
 	C3DMesh mesh;
 	std::vector<Vertex> vertices;
-	for (linalg::vec<int, 4> voxel : array_) {
+	for (std::array<int, 4> voxel : array_) {
 		// Create cube
-		std::vector<Vertex> voxelVerts = createCube(voxel.x, voxel.y, voxel.z, 0, 0, 1, 1);
-		// alloc space
+		std::vector<Vertex> voxelVerts = createCube(voxel[0], voxel[1], voxel[2], (float)types_.at(voxel[3]).uvPos[0] / tilesetSize, (float)types_.at(voxel[3]).uvPos[1] / tilesetSize, (float)types_.at(voxel[3]).uvSize / tilesetSize, (float)types_.at(voxel[3]).uvSize / tilesetSize);
+		// alloc space 
 		vertices.reserve(vertices.size() + voxelVerts.size());
 		// put in
 		vertices.insert(vertices.end(), voxelVerts.begin(), voxelVerts.end());

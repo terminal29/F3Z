@@ -22,21 +22,21 @@ void Game::run() {
 	// load a texture
 	C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
 	C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/Skybox1.png");
-	C3DTexture brownBrickTexture = Loader2::loadTexture("romfs:assets/textures/purpleBrick.png");
+	C3DTexture tileset1 = Loader2::loadTexture("romfs:assets/textures/tileset1.png");
 
 	// load an OBJ file
 	C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
 	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
 
-	// Load an island voxel tensor
-	VoxelTensor vt("romfs:/islands/home.json"); 
-	
+	// Load an island voxel tensor 
+	VoxelTensor vt("romfs:/islands/home.json");
+	 
 	// Create a model
 	C3DModel homeModel(homeMesh, homeTexture);
 	C3DModel skyModel(skyMesh, skyTexture);
 	
 	C3DModel generatedModel = vt.getModel();
-	generatedModel.setTexture(brownBrickTexture);
+	generatedModel.setTexture(tileset1);
 	
 	// Create and set some transforms
 	C3DTransform skyTransform;
@@ -105,7 +105,7 @@ void Game::run() {
 
 		for (Entity* entity : backgroundLayer) {
 			entity->receive(MessageType::MSG_RENDER);
-		}
+		} 
 		C3DRenderer::nextLayer();
 		for (Entity* entity : midLayer) {
 			entity->receive(MessageType::MSG_RENDER);
