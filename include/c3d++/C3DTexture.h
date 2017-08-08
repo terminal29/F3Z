@@ -2,6 +2,7 @@
 #include <citro3d.h>
 #include <vector>
 #include <sstream>
+#include <Log.h>
 
 struct Pixel {
 	unsigned char 

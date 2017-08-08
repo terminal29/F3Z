@@ -42,5 +42,8 @@ vec<float,3> C3DTransform::getForward() {
 	mat<float, 4, 4> mMatYPR = mul(mMatRoll, mul(mMatPitch, mMatYaw));
 	vec<float, 4> forward = { 0,0,1,0 };
 	vec<float, 4> outvec = mul(mMatYPR, forward);
+
+
+
 	return vec<float, 3>{outvec.x, outvec.y, outvec.z};
 }

@@ -1,0 +1,24 @@
+{
+	"static":{
+		"purpleBrick":{
+			"texPath":"romfs:/assets/textures/purpleBrick.png"
+		},
+		"brownStone":{
+			"texPath":"romfs:/assets/textures/brownStone.png",
+			"canRotate":false
+		},
+		"greyStone":{
+			"texPath":"romfs:/assets/textures/greyStone.png"
+		}
+	},
+	"dynamic":{
+		"floatingPlatformA":{
+			"model":"romfs:/assets/models/floatingPlatformA",
+			"texPath":"romfs:/assets/textures/floatingPlatformA",
+			"internalType":"floatA",
+			"options":{
+				"floatHeight":5
+			}
+		}
+	}
+}

@@ -48,7 +48,7 @@ CFLAGS	:=	-g -Wall -Werror=return-type -O1 -mword-relocations \
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=gnu++11 
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=gnu++11 -fstack-check
 
 OPTIMISE	:= -ftree-loop-distribution -funroll-loops \
 			-ffast-math -faggressive-loop-optimizations \

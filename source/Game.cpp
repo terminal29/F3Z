@@ -3,6 +3,8 @@
 Game::Game()
 {
 	C3DRenderer::initRenderer();
+	FileSystem::instance();
+	Log::instance();
 }
 
 Game::~Game()
@@ -17,18 +19,24 @@ Game& Game::instance() {
 
 void Game::run() {
 	
-
 	// load a texture
 	C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
 	C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/Skybox1.png");
+	C3DTexture brownBrickTexture = Loader2::loadTexture("romfs:assets/textures/purpleBrick.png");
 
 	// load an OBJ file
 	C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
 	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
 
+	// Load an island voxel tensor
+	VoxelTensor vt("romfs:/islands/home.json"); 
+	
 	// Create a model
 	C3DModel homeModel(homeMesh, homeTexture);
 	C3DModel skyModel(skyMesh, skyTexture);
+	
+	C3DModel generatedModel = vt.getModel();
+	generatedModel.setTexture(brownBrickTexture);
 	
 	// Create and set some transforms
 	C3DTransform skyTransform;
@@ -39,24 +47,27 @@ void Game::run() {
 	homeTransform.setPos({ 0,0,0 });
 
 	// Create some models
-	Entity home(homeModel, homeTransform);
+//	Entity home(homeModel, homeTransform);
 	Entity sky(skyModel, skyTransform);
+	Entity testIsland(generatedModel, homeTransform);
 
 	// Set the camera to this transform
 	C3DTransform camera;
 	camera.setPos(vec<float,3>(0, 0, 10));
 	C3DRenderer::setCameraTransform(camera);
 
-	home.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+	//home.addComponent(new RenderComponent(C3DRenderTarget::TOP));
 	sky.addComponent(new RenderComponent(C3DRenderTarget::TOP, true));
-
+	testIsland.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+	 
 	std::vector<Entity*> backgroundLayer;
 	std::vector<Entity*> midLayer;
 	std::vector<Entity*> foregroundLayer;
 
 	backgroundLayer.push_back(&sky);
-	midLayer.push_back(&home);
-
+//	midLayer.push_back(&home);
+	midLayer.push_back(&testIsland);
+	 
 	consoleInit(gfxScreen_t::GFX_BOTTOM, consoleGetDefault());
 	int t;
 	while (aptMainLoop()) {
@@ -88,7 +99,7 @@ void Game::run() {
 
 		sky.getTransform().setYPR(sky.getTransform().getYPR() + vec<float, 3>(-0.001f, 0, 0));
 		sky.getTransform().setPos(camera.getPos());
-		home.getTransform().setPos(vec<float, 3>{0, 1 * cos(t/100.0), 0});
+		testIsland.getTransform().setPos(vec<float, 3>{0, 1 * cos(t/100.0), 0});
 
 		C3DRenderer::beginFrame();
 

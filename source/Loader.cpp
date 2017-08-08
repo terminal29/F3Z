@@ -8,16 +8,12 @@ namespace Loader2 {
 	C3DTexture loadTexture(std::string filepath) {
 		std::vector<unsigned char> raw;
 		unsigned int w, h;
-
 		if (lodepng::decode(raw, w, h, filepath))
 			Error::throwError("Cannot load or decode PNG file " + filepath);
-		
 		if (w != h)
 			Error::throwError("Texture " + filepath + " must be square");
-	
 		std::vector<std::vector<Pixel>> bitmap;
 		bitmap.reserve(h);
-		
 		for (unsigned int i = 0; i < h; i++) {
 			std::vector<Pixel> row;
 			row.reserve(w);
