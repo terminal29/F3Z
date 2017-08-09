@@ -13,15 +13,14 @@
 #include <Error.h>
 #include <Log.h>
 
-const size_t tensorSize = 32;
-
 class VoxelType {
 public:
 	C3DTexture texture;
 	std::string typeName;
 	std::array<int, 2> uvPos;
-	int uvSize;
 };
+
+const int tilesetSize_ = 128; // can fit 64 different blocks
 
 class VoxelTensor {
 public:
@@ -32,14 +31,18 @@ public:
 	void loadFromFile(std::string filepath);
 	C3DModel getModel();
 
-	const int tilesetSize = 64;
+	C3DTexture getStitchedTexture();
 
 private:
 	// 0 - x, 1 - y, 2 - z, 3 - typeIndex
 	std::vector<std::array<int,4>> array_;
 	std::vector<VoxelType> types_;
 	C3DModel model_;
-
+	C3DTexture stitchedTexture_;
+	
 
 	void createMesh();
+
+	void stitchTextures();
+
 };

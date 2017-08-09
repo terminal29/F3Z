@@ -29,6 +29,8 @@ namespace C3DRenderer {
 
 	void setCameraTransform(C3DTransform& cameraTransform);
 
+	C3DTransform& getCameraTransform();
+
 	void endFrame();
 
 	void setTarget(C3DRenderTarget target);

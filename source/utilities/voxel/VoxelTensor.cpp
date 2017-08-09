@@ -81,10 +81,6 @@ void VoxelTensor::loadFromFile(std::string filepath) {
 			Error::throwError(voxelType + " does not have a valid \"texPath\"");
 		}
 
-		if (!voxelData[voxelType].isMember("uvSize") || !voxelData[voxelType]["uvSize"].isInt()) {
-			Error::throwError(voxelType + " does not have a valid \"uvSize\"");
-		}
-
 		if (!voxelData[voxelType].isMember("uvPos") || !voxelData[voxelType]["uvPos"].isArray() || voxelData[voxelType]["uvPos"].size() != 2) {
 			Error::throwError(voxelType + " does not have a valid \"uvPos\"");
 		}
@@ -93,7 +89,6 @@ void VoxelTensor::loadFromFile(std::string filepath) {
 		newType.texture = Loader2::loadTexture(voxelData[voxelType]["texPath"].asString());
 		newType.typeName = voxelType;
 		newType.uvPos = std::array<int, 2>{voxelData[voxelType]["uvPos"][0].asInt(), voxelData[voxelType]["uvPos"][1].asInt()};
-		newType.uvSize = voxelData[voxelType]["uvSize"].asInt();
 
 		// for each position
 		for (Json::Value position : voxelTypes[voxelType]) {
@@ -103,8 +98,11 @@ void VoxelTensor::loadFromFile(std::string filepath) {
 		types_.push_back(newType);
 	}
 
-	createMesh();
+	// MUST BE CALLED BEFORE MESH CREATION
+	stitchTextures();
 
+	createMesh();
+	
 }
 
 enum class Side {
@@ -210,7 +208,7 @@ void VoxelTensor::createMesh() {
 	std::vector<Vertex> vertices;
 	for (std::array<int, 4> voxel : array_) {
 		// Create cube
-		std::vector<Vertex> voxelVerts = createCube(voxel[0], voxel[1], voxel[2], (float)types_.at(voxel[3]).uvPos[0] / tilesetSize, (float)types_.at(voxel[3]).uvPos[1] / tilesetSize, (float)types_.at(voxel[3]).uvSize / tilesetSize, (float)types_.at(voxel[3]).uvSize / tilesetSize);
+		 std::vector<Vertex> voxelVerts = createCube(voxel[0], voxel[1], voxel[2], (float)types_.at(voxel[3]).uvPos[0] / tilesetSize_, (float)types_.at(voxel[3]).uvPos[1] / tilesetSize_, 16.0 / tilesetSize_, 16.0 / tilesetSize_); 
 		// alloc space 
 		vertices.reserve(vertices.size() + voxelVerts.size());
 		// put in
@@ -222,4 +220,60 @@ void VoxelTensor::createMesh() {
 
 C3DModel VoxelTensor::getModel() {
 	return model_;
+}
+
+void VoxelTensor::stitchTextures() {
+
+	// Too big to fit on stack so push to heap w/ new
+	std::array<std::array<Pixel, tilesetSize_>, tilesetSize_>* stitchedBitmap = new std::array<std::array<Pixel, tilesetSize_>, tilesetSize_>;
+	for (std::array<Pixel, tilesetSize_>& row : *stitchedBitmap) {
+		for (Pixel& p : row) {
+			p.a = rand() % 255;
+			p.r = rand() % 255;
+			p.g = rand() % 255;
+			p.b = rand() % 255;
+		}
+	}
+
+	int texIndex = 0;
+	if (types_.size() > 64) {
+		Error::throwError("An island must have 64 or less different tiles");
+	}
+
+	for (VoxelType& type : types_) {
+		std::vector<std::vector<Pixel>> bitmap = type.texture.getTexture();
+		std::array<std::array<Pixel, 16>, 16> tileImg;
+		int xoffs = floor((float)texIndex / tilesetSize_) * 16;
+		int yoffs = (texIndex * 16) % tilesetSize_;
+		// cut sub-image out of full texture
+		for (int y = 0; y < 16; y++) {
+			for (int x = 0; x < 16; x++) { 
+				stitchedBitmap->at(x + xoffs).at(y + yoffs) = bitmap.at(type.uvPos[1] + x).at(type.uvPos[0] + y);
+			}
+		}
+
+		int uvX = yoffs;
+		int uvY = 112 - xoffs;
+
+		Log::instance().writeLine(Logfile::LOG_GENERAL, ">  " + type.typeName + " >> " + std::to_string(uvX) + " : " + std::to_string(uvY));
+
+		type.uvPos = { uvX, uvY };
+		texIndex++;
+	}
+	
+	std::vector<std::vector<Pixel>> texVec;
+	for (std::array<Pixel, tilesetSize_> row : *stitchedBitmap) {
+		std::vector<Pixel> rowVec;
+		for (Pixel pixel : row) {
+			rowVec.push_back(pixel);
+		}
+		texVec.push_back(rowVec);
+	}
+	stitchedTexture_.setTexture(texVec);
+	model_.setTexture(stitchedTexture_);
+	delete stitchedBitmap;
+}
+
+C3DTexture VoxelTensor::getStitchedTexture() {
+	return stitchedTexture_;
 }

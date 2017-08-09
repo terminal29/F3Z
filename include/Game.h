@@ -8,6 +8,7 @@
 #include <Loader.h>
 #include <entity/Entity.h>
 #include <entity/component/RenderComponent.h>
+#include <entity/component/CameraController.h>
 #include <utilities\voxel\VoxelTensor.h>
 
 #include <utilities\Time.h>

@@ -18,6 +18,8 @@ Game& Game::instance() {
 }
 
 void Game::run() {
+	consoleInit(gfxScreen_t::GFX_BOTTOM, consoleGetDefault());
+	std::cout << "Loading..." << std::endl;
 	
 	// load a texture
 	C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
@@ -27,82 +29,63 @@ void Game::run() {
 	// load an OBJ file
 	C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
 	C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
+	C3DMesh planeMesh = Loader2::loadOBJ("romfs:/assets/models/Plane.obj");
 
 	// Load an island voxel tensor 
 	VoxelTensor vt("romfs:/islands/home.json");
-	 
+
 	// Create a model
 	C3DModel homeModel(homeMesh, homeTexture);
 	C3DModel skyModel(skyMesh, skyTexture);
 	
-	C3DModel generatedModel = vt.getModel();
-	generatedModel.setTexture(tileset1);
+	C3DModel beaconModel = vt.getModel();
 	
 	// Create and set some transforms
 	C3DTransform skyTransform;
 	skyTransform.setPos({ 0,0,0 });
 	skyTransform.setScale(10);
 
-	C3DTransform homeTransform;
-	homeTransform.setPos({ 0,0,0 });
+	C3DTransform beaconTransform;
+	beaconTransform.setPos({ 0,0,0 });
 
 	// Create some models
-//	Entity home(homeModel, homeTransform);
 	Entity sky(skyModel, skyTransform);
-	Entity testIsland(generatedModel, homeTransform);
+	Entity beaconIsland(beaconModel, beaconTransform);
 
-	// Set the camera to this transform
-	C3DTransform camera;
-	camera.setPos(vec<float,3>(0, 0, 10));
-	C3DRenderer::setCameraTransform(camera);
+	Entity camera;
+	C3DTransform cameraTransform;
+	cameraTransform.setPos({ 0,0,10 });
+	camera.setTransform(cameraTransform);
 
-	//home.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+	camera.addComponent(new CameraController(true));
 	sky.addComponent(new RenderComponent(C3DRenderTarget::TOP, true));
-	testIsland.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+	beaconIsland.addComponent(new RenderComponent(C3DRenderTarget::TOP));
+
+	std::vector<Entity*> entities = { &camera, &sky, &beaconIsland };
 	 
-	std::vector<Entity*> backgroundLayer;
-	std::vector<Entity*> midLayer;
+	std::vector<Entity*> backgroundLayer = { &sky };
+	std::vector<Entity*> midLayer = { &beaconIsland };
 	std::vector<Entity*> foregroundLayer;
-
-	backgroundLayer.push_back(&sky);
-//	midLayer.push_back(&home);
-	midLayer.push_back(&testIsland);
 	 
-	consoleInit(gfxScreen_t::GFX_BOTTOM, consoleGetDefault());
-	int t;
+	consoleClear();
 	while (aptMainLoop()) {
-		t++;
-
+		Time::step();
 		hidScanInput();
 		u32 kDown = hidKeysDown();
-		u32 kHeld = hidKeysHeld();
 		if (kDown & KEY_START)
 			break;
 
-		circlePosition analogStick;
-		hidCircleRead(&analogStick);
-		
-		if ((analogStick.dy > 25 || analogStick.dy < -25)) {
-			camera.setYPR(camera.getYPR() + vec<float, 3>(0, analogStick.dy / 5000.0, 0));
-		}
-		if ((analogStick.dx > 25 || analogStick.dx < -25)) {
-			camera.setYPR(camera.getYPR() + vec<float, 3>(-analogStick.dx / 5000.0, 0, 0));
-		}
-		
-		if (kHeld & KEY_L) {
-			camera.setPos(camera.getPos() + camera.getForward());
-		}
-		else if (kHeld & KEY_R) {
-			camera.setPos(camera.getPos() - camera.getForward());
-		}
 		// Lock skybox to camera
 
 		sky.getTransform().setYPR(sky.getTransform().getYPR() + vec<float, 3>(-0.001f, 0, 0));
-		sky.getTransform().setPos(camera.getPos());
-		testIsland.getTransform().setPos(vec<float, 3>{0, 1 * cos(t/100.0), 0});
+		sky.getTransform().setPos(camera.getTransform().getPos());
+		beaconIsland.getTransform().setPos(vec<float, 3>{0, 1 * cos(Time::t()/100.0), 0});
+
+		for (Entity* entity : entities) {
+			entity->receive(MessageType::MSG_UPDATE);
+		}
 
 		C3DRenderer::beginFrame();
-
 		for (Entity* entity : backgroundLayer) {
 			entity->receive(MessageType::MSG_RENDER);
 		} 
@@ -114,9 +97,7 @@ void Game::run() {
 		for (Entity* entity : foregroundLayer) {
 			entity->receive(MessageType::MSG_RENDER);
 		}
-
 		C3DRenderer::endFrame();
-
+		
 	}
-
 }

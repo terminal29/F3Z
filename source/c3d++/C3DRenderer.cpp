@@ -30,6 +30,10 @@ namespace C3DRenderer {
 		local::cameraTransform_ = &cameraTransform;
 	}
 
+	C3DTransform& getCameraTransform() {
+		return *local::cameraTransform_;
+	}
+
 	void initRenderer() {
 		gfxInitDefault();
 		C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
@@ -146,27 +150,6 @@ namespace C3DRenderer {
 		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
 		C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
 		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
-
-		/* Matrix stuff */
-		/*
-		glm::mat4 matRoll = glm::mat4(1.0f);//identity matrix;
-		glm::mat4 matPitch = glm::mat4(1.0f);//identity matrix
-		glm::mat4 matYaw = glm::mat4(1.0f);//identity matrix
-
-		//roll, pitch and yaw are used to store our angles in our class
-		matRoll = glm::rotate(matRoll, roll, glm::vec3(0.0f, 0.0f, 1.0f));
-		matPitch = glm::rotate(matPitch, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-		matYaw = glm::rotate(matYaw, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		//order matters
-		glm::mat4 rotate = mattRoll * matPitch * matYaw;
-
-		glm::mat4 translate = glm::mat4(1.0f);
-		translate = glm::translate(translate, -eyeVector);
-
-		viewMatrix = rotate * translate;
-		*/
 		
 		/* VIEW MATRIX */
 		vec<float, 3> cYPR = local::cameraTransform_->getYPR();

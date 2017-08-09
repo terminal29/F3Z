@@ -7,6 +7,9 @@ namespace Time {
 
 	// Get delta time
 	double dt();
+
+	// Get time elapsed
+	double t();
 	
 	// Call once per frame, updates delta time
 	void step();

@@ -2,24 +2,20 @@
 	"static":{
 		"purpleBrick":{
 			"texPath":"romfs:/assets/textures/tileset1.png",
-			"uvSize":16,
 			"uvPos":[0,0]
 		},
 		"brownStone":{
 			"texPath":"romfs:/assets/textures/tileset1.png",
-			"uvSize":16,
 			"uvPos":[16,0],
 			"canRotate":false
 		},
 		"yellowStone":{
 			"texPath":"romfs:/assets/textures/tileset1.png",
-			"uvSize":16,
 			"uvPos":[32,0],
 			"canRotate":false
 		},
 		"greyStone":{
 			"texPath":"romfs:/assets/textures/tileset1.png",
-			"uvSize":16,
 			"uvPos":[48,0],
 			"canRotate":false
 		}

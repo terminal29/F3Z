@@ -2,6 +2,7 @@
 #include <entity/component/Component.h>
 #include <c3d++/C3DRenderer.h>
 
+
 class RenderComponent :public Component{
 public:
 	RenderComponent();
