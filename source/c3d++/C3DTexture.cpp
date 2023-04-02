@@ -1,4 +1,5 @@
 #include <c3d++/C3DTexture.h>
+#include <iostream>
 
 int C3DTexture::textureConvertFlags_ =
 	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_RAW_COPY(0) | \
@@ -31,18 +32,22 @@ C3DTexture C3DTexture::operator= (const C3DTexture & that)
 }
 
 void C3DTexture::setTexture(std::vector<std::vector<Pixel>> newBitmap) {
+	std::cout << "1" << "\n";
 	bitmap_ = newBitmap;
 	bitmapSize_ = bitmap_.size();	
 	if (bitmapSize_ < 64) {
 		Error::throwError("Textures must be 64x64 or larger"); //TODO Fix this
 	}
+	std::cout << "2" << "\n";
 	if (initialized_) {
 		C3D_TexDelete(&texture_);
 	}
+	std::cout << "3" << "\n";
 	C3D_TexInit(&texture_, bitmapSize_, bitmapSize_, GPU_RGBA8);
 	initialized_ = true;
 	u8*	texDataLilEndian = (u8*)linearAlloc(bitmapSize_ * bitmapSize_ * 4);
 
+	std::cout << "4" << "\n";
 	u8* texPtr = texDataLilEndian;
 	for (size_t i = 0; i < bitmapSize_; i++) {
 		for (size_t j = 0; j < bitmapSize_; j++) {
@@ -53,14 +58,20 @@ void C3DTexture::setTexture(std::vector<std::vector<Pixel>> newBitmap) {
 		}
 	}
 
+	std::cout << "5" << "\n";
 	// ensure data is in physical ram
 	GSPGPU_FlushDataCache(texDataLilEndian, bitmapSize_*bitmapSize_ * 4);
+	std::cout << "6" << "\n";
 
 	// Convert image to 3DS tiled texture format
-	C3D_SafeDisplayTransfer((u32*)texDataLilEndian, GX_BUFFER_DIM(bitmapSize_, bitmapSize_), (u32*)texture_.data, GX_BUFFER_DIM(bitmapSize_, bitmapSize_), textureConvertFlags_);
-	gspWaitForPPF();
+	C3D_SyncDisplayTransfer((u32*)texDataLilEndian, GX_BUFFER_DIM(bitmapSize_, bitmapSize_), (u32*)texture_.data, GX_BUFFER_DIM(bitmapSize_, bitmapSize_), textureConvertFlags_);
+	
+	std::cout << "7" << "\n";
+	//gspWaitForPPF();
 
+	std::cout << "8" << "\n";
 	linearFree(texDataLilEndian);
+	std::cout << "9" << "\n";
 }
 
 C3D_Tex* C3DTexture::getCTexture() {

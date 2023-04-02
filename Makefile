@@ -46,9 +46,9 @@ CFLAGS	:=	-g -Wall -Werror=return-type -O1 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -D__3DS__
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=gnu++11 -fstack-check
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=c++20 -fstack-check -U__STRICT_ANSI__
 
 OPTIMISE	:= -ftree-loop-distribution -funroll-loops \
 			-ffast-math -faggressive-loop-optimizations \
