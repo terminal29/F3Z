@@ -6,8 +6,10 @@
 #include <chrono>
 #include <sstream>
 #include <vector>
+#include <unordered_map>
 
-enum Logfile {
+enum Logfile
+{
 	LOG_GENERAL,
 	LOG_GRAPHICS,
 	LOG_LOGIC
@@ -16,8 +18,7 @@ enum Logfile {
 class Log
 {
 public:
-	
-	static Log& instance();
+	static Log &instance();
 	void writeLine(Logfile l, std::string data);
 
 	// Start profiler for a function
@@ -29,14 +30,13 @@ public:
 	// Write profiler data to disk
 	void profileOutput();
 
+	using time_t = std::chrono::microseconds;
+
 private:
 	static Log instance_;
 
-	std::vector<std::string> funcNames;
-	std::vector<std::vector<std::chrono::microseconds>> funcBeginTimes;
-	std::vector<std::vector<std::chrono::microseconds>> funcEndTimes;
+	std::unordered_map<std::string, std::vector<std::pair<time_t, time_t>>> profileData_;
 
 	Log();
 	~Log();
 };
-

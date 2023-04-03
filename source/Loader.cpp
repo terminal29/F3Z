@@ -1,11 +1,13 @@
 #include <Loader.h>
 
-#define TINYOBJLOADER_IMPLEMENTATION 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "library/tinyobj_loader.h"
 
-namespace Loader2 {
+namespace Loader2
+{
 
-	C3DTexture loadTexture(std::string filepath) {
+	C3DTexture loadTexture(std::string filepath)
+	{
 		std::vector<unsigned char> raw;
 		unsigned int w, h;
 		if (lodepng::decode(raw, w, h, filepath))
@@ -14,12 +16,14 @@ namespace Loader2 {
 			Error::throwError("Texture " + filepath + " must be square");
 		std::vector<std::vector<Pixel>> bitmap;
 		bitmap.reserve(h);
-		for (unsigned int i = 0; i < h; i++) {
+		for (unsigned int i = 0; i < h; i++)
+		{
 			std::vector<Pixel> row;
 			row.reserve(w);
-			for (unsigned int j = 0; j < w; j++) {
+			for (unsigned int j = 0; j < w; j++)
+			{
 				// Get next pixel's RGBA values
-				Pixel p{ raw.at((i*w*4) + j*4), raw.at((i * w * 4) + j * 4 + 1), raw.at((i * w * 4) + j * 4 + 2), raw.at((i * w * 4) + j * 4 + 3) };
+				Pixel p{raw.at((i * w * 4) + j * 4), raw.at((i * w * 4) + j * 4 + 1), raw.at((i * w * 4) + j * 4 + 2), raw.at((i * w * 4) + j * 4 + 3)};
 				row.push_back(p);
 			}
 			bitmap.push_back(row);
@@ -28,8 +32,8 @@ namespace Loader2 {
 		return tex;
 	}
 
-	C3DMesh loadOBJ(std::string filepath) {
-		C3DMesh mesh;
+	C3DMesh loadOBJ(std::string filepath)
+	{
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -37,24 +41,26 @@ namespace Loader2 {
 
 		std::string err;
 		bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filepath.c_str());
-		if (!ret) {
+		if (!ret)
+		{
 			Error::throwError("Cannot open or parse OBJ file: " + filepath);
 		}
 
-		std::vector <Vertex> vertices;
+		std::vector<Vertex> vertices;
 		Vertex vert;
+
 		// Loop over shapes
-		for (size_t s = 0; s < shapes.size(); s++) {
-			// Loop over faces(polygon)
+		for (auto const &shape : shapes)
+		{
 			size_t index_offset = 0;
-			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-				int fv = shapes[s].mesh.num_face_vertices[f];
+			// Loop over faces(polygon)
+			for (auto const &num_face_vertices : shape.mesh.num_face_vertices)
+			{
 
 				// Loop over vertices in the face.
-				for (size_t v = 0; v < fv; v++) {
-					// access to vertex
-
-					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+				for (size_t i = 0; i < num_face_vertices; i++)
+				{
+					tinyobj::index_t idx = shape.mesh.indices[index_offset + i];
 					vert.position.x = attrib.vertices[3 * idx.vertex_index + 0];
 					vert.position.y = attrib.vertices[3 * idx.vertex_index + 1];
 					vert.position.z = attrib.vertices[3 * idx.vertex_index + 2];
@@ -65,12 +71,34 @@ namespace Loader2 {
 					vert.texcoord.y = attrib.texcoords[2 * idx.texcoord_index + 1];
 					vertices.push_back(vert);
 				}
-				index_offset += fv;
+				index_offset += num_face_vertices;
 			}
 		}
-		mesh.setVertices(vertices);
-		return mesh;
+		// Loop over shapes
+		// for (size_t s = 0; s < shapes.size(); s++) {
+		// 	// Loop over faces(polygon)
+		// 	size_t index_offset = 0;
+		// 	for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+		// 		int fv = shapes[s].mesh.num_face_vertices[f];
+
+		// 		// Loop over vertices in the face.
+		// 		for (size_t v = 0; v < fv; v++) {
+		// 			// access to vertex
+
+		// 			tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+		// 			vert.position.x = attrib.vertices[3 * idx.vertex_index + 0];
+		// 			vert.position.y = attrib.vertices[3 * idx.vertex_index + 1];
+		// 			vert.position.z = attrib.vertices[3 * idx.vertex_index + 2];
+		// 			vert.normal.x = attrib.normals[3 * idx.normal_index + 0];
+		// 			vert.normal.y = attrib.normals[3 * idx.normal_index + 1];
+		// 			vert.normal.z = attrib.normals[3 * idx.normal_index + 2];
+		// 			vert.texcoord.x = attrib.texcoords[2 * idx.texcoord_index + 0];
+		// 			vert.texcoord.y = attrib.texcoords[2 * idx.texcoord_index + 1];
+		// 			vertices.push_back(vert);
+		// 		}
+		// 		index_offset += fv;
+		// 	}
+		// }
+		return C3DMesh{std::move(vertices)};
 	}
 }
-
-
