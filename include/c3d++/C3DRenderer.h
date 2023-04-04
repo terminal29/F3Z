@@ -12,14 +12,16 @@
 #define C3D_RenderTarget C3D_RenderTarget_tag
 #endif
 
-enum class C3DRenderTarget {
+enum class C3DRenderTarget
+{
 	LEFT,
 	RIGHT,
 	TOP,
 	BOTTOM
 };
 
-namespace C3DRenderer {
+namespace C3DRenderer
+{
 
 	void initRenderer();
 
@@ -27,9 +29,9 @@ namespace C3DRenderer {
 
 	void beginFrame();
 
-	void setCameraTransform(C3DTransform& cameraTransform);
+	void setCameraTransform(C3DTransform cameraTransform);
 
-	C3DTransform& getCameraTransform();
+	C3DTransform const &getCameraTransform();
 
 	void endFrame();
 
@@ -37,9 +39,9 @@ namespace C3DRenderer {
 
 	void drawNextShadeless();
 
-	void draw(C3DModel& model, C3DTransform& transform);
+	void draw(C3DModel const &model, C3DTransform const &transform);
 
-	void draw(C3DMesh& mesh, C3DTexture& texture, C3DTransform& transform);
+	void draw(C3DMesh const &mesh, C3DTexture const &texture, C3DTransform const &transform);
 
 	void nextLayer();
 };

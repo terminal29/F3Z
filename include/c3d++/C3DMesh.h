@@ -40,17 +40,17 @@ public:
 	~C3DMesh();
 
 	void setVertices(std::vector<Vertex> vertices);
-	std::vector<Vertex> const &getVertices();
+	std::vector<Vertex> const &getVertices() const;
 
 	C3DMesh operator=(const C3DMesh &mesh);
 	C3DMesh(const C3DMesh &mesh);
 
-	std::span<float> getVBO();
+	std::span<float> getVBO() const;
 
 private:
-	void freeVBO();
+	void freeVBO() const;
 
 	std::vector<Vertex> vertices_;
-	std::span<float> VBO_;
-	bool VBODirty_ = true;
+	mutable std::span<float> VBO_;
+	mutable bool VBODirty_ = true;
 };

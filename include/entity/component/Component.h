@@ -4,7 +4,8 @@
 
 class Entity;
 
-enum class MessageType {
+enum class MessageType
+{
 	MSG_UPDATE,
 	MSG_RENDER
 };
@@ -12,17 +13,20 @@ enum class MessageType {
 class Component
 {
 public:
+	Component(){};
 
-	virtual ~Component() {};
+	inline void setDeleting(bool deleting)
+	{
+		deleting_ = deleting;
+	}
 
-	virtual void receive(Entity& e, MessageType msg) = 0;
+	virtual void receive(Entity &e, MessageType msg) = 0;
 
 	virtual std::string getType() = 0;
 
-	bool enabled_ = true;
+	virtual ~Component(){};
 
 protected:
-	// To stop instantiation leading to calling getType() = 0
-	Component() {};
+	bool enabled_ = true;
+	bool deleting_ = false;
 };
-

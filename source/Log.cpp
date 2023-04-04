@@ -13,11 +13,11 @@ void Log::profileStart(std::string funcName)
 	const auto now = std::chrono::duration_cast<time_t>(std::chrono::system_clock::now().time_since_epoch());
 	if (profileData_.find(funcName) == profileData_.end())
 	{
-		profileData_[funcName].emplace_back(std::pair<time_t, time_t>(now, 0));
+		profileData_[funcName].emplace_back(now, time_t{0});
 	}
 	else
 	{
-		profileData_[funcName] = std::vector{std::pair<time_t, time_t>(now, 0)};
+		profileData_[funcName] = std::vector{std::pair<time_t, time_t>(now, time_t{0})};
 	}
 }
 

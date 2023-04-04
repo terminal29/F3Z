@@ -18,25 +18,19 @@ namespace C3DRenderer
 
 		C3DRenderTarget currentTarget = C3DRenderTarget::TOP;
 
-		bool hasSetCamera_ = false;
-		C3DTransform *cameraTransform_ = new C3DTransform();
+		C3DTransform cameraTransform_;
 
 		bool shadeless_ = false;
 	}
 
-	void setCameraTransform(C3DTransform &cameraTransform)
+	void setCameraTransform(C3DTransform cameraTransform)
 	{
-		if (!local::hasSetCamera_)
-		{
-			delete local::cameraTransform_;
-			local::hasSetCamera_ = true;
-		}
-		local::cameraTransform_ = &cameraTransform;
+		local::cameraTransform_ = std::move(cameraTransform);
 	}
 
-	C3DTransform &getCameraTransform()
+	C3DTransform const &getCameraTransform()
 	{
-		return *local::cameraTransform_;
+		return local::cameraTransform_;
 	}
 
 	void initRenderer()
@@ -96,12 +90,12 @@ namespace C3DRenderer
 		local::shadeless_ = true;
 	}
 
-	void draw(C3DModel &model, C3DTransform &transform)
+	void draw(C3DModel const &model, C3DTransform const &transform)
 	{
 		draw(model.getMesh(), model.getTexture(), transform);
 	}
 
-	void draw(C3DMesh &mesh, C3DTexture &texture, C3DTransform &transform)
+	void draw(C3DMesh const &mesh, C3DTexture const &texture, C3DTransform const &transform)
 	{
 		if (mesh.getVertices().size() < 1)
 			return;
@@ -158,7 +152,7 @@ namespace C3DRenderer
 		BufInfo_Add(bufInfo, mesh.getVBO().data(), sizeof(Vertex::value_type) * Vertex::stride, 3, 0x210);
 
 		C3D_CullFace(GPU_CULLMODE::GPU_CULL_FRONT_CCW);
-		C3D_TexBind(0, texture.getCTexture());
+		C3D_TexBind(0, const_cast<C3D_Tex *>(&texture.getCTexture()));
 
 		C3D_TexEnv *env = C3D_GetTexEnv(0);
 		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_TEVSRC::GPU_PRIMARY_COLOR);
@@ -166,8 +160,8 @@ namespace C3DRenderer
 		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
 		/* VIEW MATRIX */
-		vec<float, 3> cYPR = local::cameraTransform_->getYPR();
-		vec<float, 3> cPos = local::cameraTransform_->getPos();
+		vec<float, 3> cYPR = local::cameraTransform_.getYPR();
+		vec<float, 3> cPos = local::cameraTransform_.getPos();
 
 		mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3>{0, 1, 0}, -cYPR.x));
 		mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3>{1, 0, 0}, -cYPR.y));

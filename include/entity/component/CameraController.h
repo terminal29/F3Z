@@ -5,20 +5,21 @@
 #include <utilities\Time.h>
 #include <library/linalg.h>
 
-class CameraController :public Component {
+class CameraController : public Component
+{
 public:
-	CameraController(); 
+	CameraController();
 	CameraController(bool freeFlight);
 
-	virtual void receive(Entity& e, MessageType type) override;
+	virtual void receive(Entity &e, MessageType type) final override;
 
-	virtual std::string getType() override;
+	virtual std::string getType() final override;
 
 	virtual ~CameraController();
 
 	static const std::string typeName;
 
 private:
-	virtual void update(Entity& e);
+	virtual void update(Entity &e);
 	bool freeFlight_ = false;
 };

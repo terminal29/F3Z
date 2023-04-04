@@ -13,7 +13,8 @@
 #include <Error.h>
 #include <Log.h>
 
-class VoxelType {
+class VoxelType
+{
 public:
 	C3DTexture texture;
 	std::string typeName;
@@ -22,7 +23,8 @@ public:
 
 const int tilesetSize_ = 128; // can fit 64 different blocks
 
-class VoxelTensor {
+class VoxelTensor
+{
 public:
 	VoxelTensor();
 	VoxelTensor(std::string filepath);
@@ -35,14 +37,12 @@ public:
 
 private:
 	// 0 - x, 1 - y, 2 - z, 3 - typeIndex
-	std::vector<std::array<int,4>> array_;
+	std::vector<std::tuple<int, int, int, std::size_t>> array_;
 	std::vector<VoxelType> types_;
 	C3DModel model_;
 	C3DTexture stitchedTexture_;
-	
 
 	void createMesh();
 
 	void stitchTextures();
-
 };

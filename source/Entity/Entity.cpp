@@ -4,7 +4,7 @@ Entity::Entity()
 {
 }
 
-Entity::Entity(C3DModel model, C3DTransform transform) :model_(model), transform_(transform)
+Entity::Entity(C3DModel model, C3DTransform transform) : model_(model), transform_(transform)
 {
 }
 
@@ -16,54 +16,54 @@ Entity::~Entity()
 {
 }
 
-C3DTransform& Entity::getTransform() {
+C3DTransform const &Entity::getTransform()
+{
 	return transform_;
 }
-void Entity::setTransform(C3DTransform transform) {
+void Entity::setTransform(C3DTransform transform)
+{
 	transform_ = transform;
 }
 
-C3DModel& Entity::getModel() {
+C3DModel const &Entity::getModel()
+{
 	return model_;
 }
 
-void Entity::setModel(C3DModel model) {
+void Entity::setModel(C3DModel model)
+{
 	model_ = model;
 }
 
-void Entity::receive(MessageType message) {
-	for (Component* component : components_) {
-		component->receive(*this, message);
+void Entity::receive(MessageType message)
+{
+	for (auto &component : components_)
+	{
+		component.second->receive(*this, message);
 	}
 }
 
-bool Entity::addComponent(Component* component) {
-	if (hasComponent(component->getType())) {
-		return false;
-	}
-	components_.push_back(component);
-	return true;
+bool Entity::hasComponent(std::string componentType)
+{
+	return components_.contains(componentType);
 }
 
-bool Entity::hasComponent(std::string componentType) {
-	for (int i = 0; i < components_.size(); i++) {
-		if (components_.at(i)->getType() == componentType) {
-			return true;
-		}
+std::weak_ptr<Component> Entity::getComponent(std::string componentType)
+{
+	if (hasComponent(componentType))
+	{
+		return std::weak_ptr(components_.at(componentType));
 	}
-	return false;
+	return std::weak_ptr<Component>();
 }
 
-Component* Entity::getComponent(std::string componentType) {
-	for (int i = 0; i < components_.size(); i++) {
-		if (components_.at(i)->getType() == componentType) {
-			return components_.at(i);
-		}
+bool Entity::removeComponent(std::string componentType)
+{
+	if (hasComponent(componentType))
+	{
+		components_.at(componentType)->setDeleting(true);
+		components_.erase(componentType);
+		return true;
 	}
-	return nullptr;
-}
-
-bool Entity::removeComponent(std::string componentType) {
-	// TODO
 	return false;
 }

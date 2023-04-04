@@ -52,7 +52,8 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -std=c++20 -fstack-check -U__STRICT_ANSI__
 
 OPTIMISE	:= -ftree-loop-distribution -funroll-loops \
 			-ffast-math -faggressive-loop-optimizations \
-			-finline-small-functions -findirect-inlining
+			-finline-small-functions -findirect-inlining \
+			-Wno-psabi
 			
 
 ASFLAGS	:=	-g $(ARCH)

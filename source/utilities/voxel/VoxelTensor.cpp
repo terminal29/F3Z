@@ -109,7 +109,7 @@ void VoxelTensor::loadFromFile(std::string filepath)
 		// for each position
 		for (Json::Value position : voxelTypes[voxelType])
 		{
-			std::array<int, 4> voxelInstance = {position[0].asInt(), position[1].asInt(), position[2].asInt(), types_.size()}; // TODO add to voxelTypes if not in already
+			std::tuple<int, int, int, std::size_t> voxelInstance = {position[0].asInt(), position[1].asInt(), position[2].asInt(), types_.size()}; // TODO add to voxelTypes if not in already
 			array_.push_back(voxelInstance);
 		}
 		types_.push_back(newType);
@@ -203,31 +203,22 @@ std::vector<Vertex> createCube(int x, int y, int z, float uv_x, float uv_y, floa
 	std::vector<Vertex> vBack = createFace(Side::BACK);
 
 	vertices.reserve(vTop.size() + vBottom.size() + vLeft.size() + vRight.size() + vFront.size() + vBack.size());
-	vertices.insert(vertices.end(), vTop.begin(), vTop.end());
-	vertices.insert(vertices.end(), vBottom.begin(), vBottom.end());
-	vertices.insert(vertices.end(), vLeft.begin(), vLeft.end());
-	vertices.insert(vertices.end(), vRight.begin(), vRight.end());
-	vertices.insert(vertices.end(), vFront.begin(), vFront.end());
-	vertices.insert(vertices.end(), vBack.begin(), vBack.end());
+	vertices.insert(vertices.end(), std::make_move_iterator(vTop.begin()), std::make_move_iterator(vTop.end()));
+	vertices.insert(vertices.end(), std::make_move_iterator(vBottom.begin()), std::make_move_iterator(vBottom.end()));
+	vertices.insert(vertices.end(), std::make_move_iterator(vLeft.begin()), std::make_move_iterator(vLeft.end()));
+	vertices.insert(vertices.end(), std::make_move_iterator(vRight.begin()), std::make_move_iterator(vRight.end()));
+	vertices.insert(vertices.end(), std::make_move_iterator(vFront.begin()), std::make_move_iterator(vFront.end()));
+	vertices.insert(vertices.end(), std::make_move_iterator(vBack.begin()), std::make_move_iterator(vBack.end()));
 
-	// std::transform(vertices.begin(), vertices.end(), vertices.begin(), [=](Vertex v)
-	// 			   { return Vertex{
-	// 					 vec<float, 3>{v.position.x + x, v.position.y + y, v.position.z + z},
-	// 					 vec<float, 2>{v.texcoord.x * uv_w + uv_x, v.texcoord.y * uv_h + uv_y},
-	// 					 vec<float, 3>{v.normal.x, v.normal.y, v.normal.z}}; });
-
-	for (int i = 0; i < vertices.size(); i++)
+	for (auto &vertex : vertices)
 	{
-
-		vertices.at(i).position.x += x;
-		vertices.at(i).position.y += y;
-		vertices.at(i).position.z += z;
-
-		vertices.at(i).texcoord.x *= uv_w;
-		vertices.at(i).texcoord.x += uv_x;
-		vertices.at(i).texcoord.y *= uv_h;
-		vertices.at(i).texcoord.y += uv_y;
+		vertex.position.x += x;
+		vertex.position.y += y;
+		vertex.position.z += z;
+		vertex.texcoord.x = vertex.texcoord.x * uv_w + uv_x;
+		vertex.texcoord.y = vertex.texcoord.y * uv_h + uv_y;
 	}
+
 	return vertices;
 }
 
@@ -235,14 +226,14 @@ void VoxelTensor::createMesh()
 {
 	C3DMesh mesh;
 	std::vector<Vertex> vertices;
-	for (std::array<int, 4> voxel : array_)
+	for (auto const &voxel : array_)
 	{
 		// Create cube
-		std::vector<Vertex> voxelVerts = createCube(voxel[0], voxel[1], voxel[2], (float)types_.at(voxel[3]).uvPos[0] / tilesetSize_, (float)types_.at(voxel[3]).uvPos[1] / tilesetSize_, 16.0 / tilesetSize_, 16.0 / tilesetSize_);
+		std::vector<Vertex> voxelVerts = createCube(std::get<0>(voxel), std::get<1>(voxel), std::get<2>(voxel), (float)types_.at(std::get<3>(voxel)).uvPos[0] / tilesetSize_, (float)types_.at(std::get<3>(voxel)).uvPos[1] / tilesetSize_, 16.0 / tilesetSize_, 16.0 / tilesetSize_);
 		// alloc space
 		vertices.reserve(vertices.size() + voxelVerts.size());
 		// put in
-		vertices.insert(vertices.end(), voxelVerts.begin(), voxelVerts.end());
+		vertices.insert(vertices.end(), std::make_move_iterator(voxelVerts.begin()), std::make_move_iterator(voxelVerts.end()));
 	}
 	mesh.setVertices(vertices);
 	model_.setMesh(mesh);

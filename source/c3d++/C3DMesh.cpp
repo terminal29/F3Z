@@ -21,7 +21,7 @@ void C3DMesh::setVertices(std::vector<Vertex> vertices)
 	VBODirty_ = true;
 }
 
-std::vector<Vertex> const &C3DMesh::getVertices()
+std::vector<Vertex> const &C3DMesh::getVertices() const
 {
 	return vertices_;
 }
@@ -42,7 +42,7 @@ C3DMesh C3DMesh::operator=(const C3DMesh &that)
 	return *this;
 }
 
-std::span<float> C3DMesh::getVBO()
+std::span<float> C3DMesh::getVBO() const
 {
 	if (VBODirty_)
 	{
@@ -67,7 +67,7 @@ std::span<float> C3DMesh::getVBO()
 	return VBO_;
 }
 
-void C3DMesh::freeVBO()
+void C3DMesh::freeVBO() const
 {
 	if (!VBO_.empty())
 	{
