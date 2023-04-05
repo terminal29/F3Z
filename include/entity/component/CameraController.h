@@ -5,7 +5,7 @@
 #include <utilities\Time.h>
 #include <library/linalg.h>
 
-class CameraController : public Component
+class CameraController : public Component<CameraController>
 {
 public:
 	CameraController();
@@ -13,11 +13,7 @@ public:
 
 	virtual void receive(Entity &e, MessageType type) final override;
 
-	virtual std::string getType() final override;
-
 	virtual ~CameraController();
-
-	static const std::string typeName;
 
 private:
 	virtual void update(Entity &e);

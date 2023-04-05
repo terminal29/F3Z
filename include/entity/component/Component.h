@@ -10,11 +10,9 @@ enum class MessageType
 	MSG_RENDER
 };
 
-class Component
+class ComponentBase
 {
 public:
-	Component(){};
-
 	inline void setDeleting(bool deleting)
 	{
 		deleting_ = deleting;
@@ -22,11 +20,30 @@ public:
 
 	virtual void receive(Entity &e, MessageType msg) = 0;
 
-	virtual std::string getType() = 0;
+	virtual ~ComponentBase() {}
 
-	virtual ~Component(){};
+	using typeid_t = void (*)();
 
 protected:
+	template <typename T>
+	static typeid_t type_id() noexcept
+	{
+		return typeid_t(type_id<T>);
+	}
+
 	bool enabled_ = true;
 	bool deleting_ = false;
+};
+
+template <typename Derived>
+class Component : public ComponentBase
+{
+public:
+	static typeid_t getTypeID() noexcept
+	{
+		return type_id<Derived>();
+	};
+
+protected:
+	virtual ~Component(){};
 };

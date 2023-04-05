@@ -48,13 +48,6 @@ void CameraController::update(Entity &e)
 	}
 }
 
-std::string CameraController::getType()
-{
-	return typeName;
-};
-
 CameraController::~CameraController()
 {
 }
-
-const std::string CameraController::typeName = "CameraController";

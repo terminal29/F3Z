@@ -70,7 +70,7 @@ void Game::run()
 	std::vector<Entity *> midLayer = {&beaconIsland};
 	std::vector<Entity *> foregroundLayer;
 
-	consoleClear();
+	// consoleClear();
 	while (aptMainLoop())
 	{
 		Time::step();

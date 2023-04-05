@@ -42,28 +42,3 @@ void Entity::receive(MessageType message)
 		component.second->receive(*this, message);
 	}
 }
-
-bool Entity::hasComponent(std::string componentType)
-{
-	return components_.contains(componentType);
-}
-
-std::weak_ptr<Component> Entity::getComponent(std::string componentType)
-{
-	if (hasComponent(componentType))
-	{
-		return std::weak_ptr(components_.at(componentType));
-	}
-	return std::weak_ptr<Component>();
-}
-
-bool Entity::removeComponent(std::string componentType)
-{
-	if (hasComponent(componentType))
-	{
-		components_.at(componentType)->setDeleting(true);
-		components_.erase(componentType);
-		return true;
-	}
-	return false;
-}
