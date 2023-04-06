@@ -56,11 +56,8 @@ void Game::run()
 	Entity beaconIsland(beaconModel, beaconTransform);
 
 	Entity camera;
-	C3DTransform cameraTransform;
-	cameraTransform.setPos({0, 0, 10});
-	camera.setTransform(cameraTransform);
 
-	camera.addComponent(CameraController{true});
+	camera.addComponent(CameraController{});
 	sky.addComponent(RenderComponent{C3DRenderTarget::TOP, true});
 	beaconIsland.addComponent(RenderComponent{C3DRenderTarget::TOP});
 
@@ -70,10 +67,11 @@ void Game::run()
 	std::vector<Entity *> midLayer = {&beaconIsland};
 	std::vector<Entity *> foregroundLayer;
 
-	// consoleClear();
 	while (aptMainLoop())
 	{
+		consoleClear();
 		Time::step();
+		std::cout << "Dt: " << Time::dt() << std::endl;
 		hidScanInput();
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
@@ -85,7 +83,7 @@ void Game::run()
 		skyTransform.setPos(camera.getTransform().getPos());
 		sky.setTransform(skyTransform);
 		auto beaconTransform = beaconIsland.getTransform();
-		beaconTransform.setPos(vec<float, 3>{0, (float)std::cos(Time::t() / 100.0), 0});
+		beaconTransform.setPos(vec<float, 3>{-20, (float)std::cos(Time::t() / 100.0), -20});
 		beaconIsland.setTransform(beaconTransform);
 
 		for (Entity *entity : entities)

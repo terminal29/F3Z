@@ -1,5 +1,6 @@
 #pragma once
 #include <entity/component/Component.h>
+#include <entity/component/CameraDirection.h>
 #include <c3d++/C3DRenderer.h>
 #include <World.h>
 #include <utilities\Time.h>
@@ -9,13 +10,25 @@ class CameraController : public Component<CameraController>
 {
 public:
 	CameraController();
-	CameraController(bool freeFlight);
 
 	virtual void receive(Entity &e, MessageType type) final override;
 
 	virtual ~CameraController();
 
+	CameraDirection getCameraDirection();
+
 private:
 	virtual void update(Entity &e);
-	bool freeFlight_ = false;
+
+	virtual void render(Entity &e);
+
+	CameraDirection switchDirection(CameraDirection direction, bool left);
+	CameraDirection direction_ = CameraDirection::NORTH;
+	float currentAngle_ = 0.0f;
+	float followDistance_ = 30.0f;
+	vec<float, 3> followPoint_{0, 0, 0};
+	vec<float, 3> currentFollowPoint_;
+	bool hasSetCurrentFollowPoint = false;
+
+	C3DModel debugModel;
 };

@@ -87,5 +87,6 @@ std::vector<std::vector<Pixel>> const &C3DTexture::getTexture() const
 
 C3DTexture::~C3DTexture()
 {
-	C3D_TexDelete(&texture_);
+	if (initialized_)
+		C3D_TexDelete(&texture_);
 }
