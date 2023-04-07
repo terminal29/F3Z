@@ -6,6 +6,8 @@
 #include <c3d++/C3DModel.h>
 #include <c3d++/C3DTransform.h>
 
+class WorldComponent;
+
 class Entity
 {
 public:
@@ -14,6 +16,10 @@ public:
 
 	Entity(C3DModel model);
 	Entity(C3DModel model, C3DTransform transform);
+
+	/* World getters and setters */
+	void setWorld(std::weak_ptr<WorldComponent> world);
+	std::weak_ptr<WorldComponent> getWorld() const;
 
 	/* Transform getters & setters */
 	C3DTransform const &getTransform();
@@ -30,11 +36,14 @@ public:
 		requires std::derived_from<TComponentType, Component<TComponentType>> bool
 	addComponent(TComponentType component)
 	{
+		auto id = TComponentType::getTypeID();
 		if (hasComponent<TComponentType>())
 		{
 			return false;
 		}
-		components_[TComponentType::getTypeID()] = std::make_shared<TComponentType>(std::move(component));
+		components_[id] = std::make_shared<TComponentType>(std::move(component));
+		components_[id]->setEntity(this);
+		components_[id]->onCreate();
 		return true;
 	}
 
@@ -79,5 +88,6 @@ public:
 private:
 	C3DModel model_;
 	C3DTransform transform_;
+	std::weak_ptr<WorldComponent> world_;
 	std::unordered_map<ComponentBase::typeid_t, std::shared_ptr<ComponentBase>> components_;
 };

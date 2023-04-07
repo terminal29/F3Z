@@ -9,12 +9,12 @@ public:
 	RenderComponent(C3DRenderTarget target);
 	RenderComponent(C3DRenderTarget target, bool shadeless);
 
-	virtual void receive(Entity &e, MessageType type) override;
+	virtual void receive(MessageType type) override;
 
 	virtual ~RenderComponent();
 
 private:
-	virtual void render(Entity &e);
+	virtual void render();
 	C3DRenderTarget target_;
 	bool shadeless_ = false;
 };

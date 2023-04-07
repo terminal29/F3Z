@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 class Entity;
 
@@ -16,9 +17,30 @@ public:
 	inline void setDeleting(bool deleting)
 	{
 		deleting_ = deleting;
+		if (deleting)
+		{
+			setEntity(nullptr);
+		}
 	}
 
-	virtual void receive(Entity &e, MessageType msg) = 0;
+	inline bool isDeleting() const
+	{
+		return deleting_;
+	}
+
+	virtual void receive(MessageType msg) = 0;
+
+	inline void setEntity(Entity *entity)
+	{
+		entity_ = entity;
+	}
+
+	Entity *getEntity() const
+	{
+		return entity_;
+	}
+
+	virtual void onCreate(){};
 
 	virtual ~ComponentBase() {}
 
@@ -31,8 +53,9 @@ protected:
 		return typeid_t(type_id<T>);
 	}
 
-	bool enabled_ = true;
-	bool deleting_ = false;
+	bool enabled_{true};
+	bool deleting_{false};
+	Entity *entity_{nullptr};
 };
 
 template <typename Derived>

@@ -17,21 +17,23 @@ RenderComponent::~RenderComponent()
 {
 }
 
-void RenderComponent::receive(Entity &e, MessageType type)
+void RenderComponent::receive(MessageType type)
 {
 	if (!enabled_)
 		return;
 
 	if (type == MessageType::MSG_RENDER)
 	{
-		render(e);
+		render();
 	}
 }
 
-void RenderComponent::render(Entity &e)
+void RenderComponent::render()
 {
+	if (entity_ == nullptr)
+		return;
 	C3DRenderer::setTarget(target_);
 	if (shadeless_)
 		C3DRenderer::drawNextShadeless();
-	C3DRenderer::draw(e.getModel(), e.getTransform());
+	C3DRenderer::draw(entity_->getModel(), entity_->getTransform());
 }

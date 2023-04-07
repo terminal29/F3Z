@@ -11,16 +11,14 @@ class CameraController : public Component<CameraController>
 public:
 	CameraController();
 
-	virtual void receive(Entity &e, MessageType type) final override;
+	virtual void receive(MessageType type) final override;
 
 	virtual ~CameraController();
 
 	CameraDirection getCameraDirection();
 
 private:
-	virtual void update(Entity &e);
-
-	virtual void render(Entity &e);
+	virtual void update();
 
 	CameraDirection switchDirection(CameraDirection direction, bool left);
 	CameraDirection direction_ = CameraDirection::NORTH;
@@ -29,6 +27,4 @@ private:
 	vec<float, 3> followPoint_{0, 0, 0};
 	vec<float, 3> currentFollowPoint_;
 	bool hasSetCurrentFollowPoint = false;
-
-	C3DModel debugModel;
 };

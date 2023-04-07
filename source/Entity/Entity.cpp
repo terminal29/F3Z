@@ -14,6 +14,10 @@ Entity::Entity(C3DModel model) : model_(model)
 
 Entity::~Entity()
 {
+	for (auto &component : components_)
+	{
+		component.second->setDeleting(true);
+	}
 }
 
 C3DTransform const &Entity::getTransform()
@@ -39,6 +43,23 @@ void Entity::receive(MessageType message)
 {
 	for (auto &component : components_)
 	{
-		component.second->receive(*this, message);
+		component.second->receive(message);
 	}
+	for (auto &component : components_)
+	{
+		if (component.second->isDeleting())
+		{
+			components_.erase(component.first);
+		}
+	}
+}
+
+void Entity::setWorld(std::weak_ptr<WorldComponent> world)
+{
+	world_ = world;
+}
+
+std::weak_ptr<WorldComponent> Entity::getWorld() const
+{
+	return world_;
 }

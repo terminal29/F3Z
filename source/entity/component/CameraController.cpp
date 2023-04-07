@@ -5,20 +5,13 @@
 
 CameraController::CameraController()
 {
-	auto cube = Loader2::loadOBJ("romfs:/assets/models/Cube.obj");
-	auto cubeTexture = Loader2::loadTexture("romfs:/assets/textures/Blank.png");
-	debugModel = C3DModel(cube, cubeTexture);
 }
 
-void CameraController::receive(Entity &e, MessageType type)
+void CameraController::receive(MessageType type)
 {
 	if (type == MessageType::MSG_UPDATE)
 	{
-		update(e);
-	}
-	if (type == MessageType::MSG_RENDER)
-	{
-		render(e);
+		update();
 	}
 }
 
@@ -78,8 +71,11 @@ constexpr float rad2deg(float rad)
 	return rad * (180 / std::numbers::pi);
 }
 
-void CameraController::update(Entity &e)
+void CameraController::update()
 {
+	if (entity_ == nullptr)
+		return;
+
 	const float moveSpeed = 0.5f;
 	u32 kDown = hidKeysDown();
 	u32 kHeld = hidKeysHeld();
@@ -136,21 +132,11 @@ void CameraController::update(Entity &e)
 	std::cout << "Camera rotation: " << cameraRotation.x << ", " << cameraRotation.y << ", " << cameraRotation.z << std::endl;
 
 	// Set camera rotation
-	auto cameraTransform = e.getTransform();
+	auto cameraTransform = entity_->getTransform();
 	cameraTransform.setYPR(cameraRotation);
 	cameraTransform.setPos(cameraPosition);
-	e.setTransform(cameraTransform);
+	entity_->setTransform(cameraTransform);
 	C3DRenderer::setCameraTransform(cameraTransform);
-}
-
-void CameraController::render(Entity &e)
-{
-	C3DTransform tf{};
-	tf.setScale(1);
-	tf.setYPR({0, 0, 0});
-	tf.setPos(currentFollowPoint_);
-	C3DRenderer::drawNextShadeless();
-	C3DRenderer::draw(debugModel, tf);
 }
 
 CameraController::~CameraController()
