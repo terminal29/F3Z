@@ -1,8 +1,7 @@
 #pragma once
 #include <entity/component/Component.h>
 
-class WorldComponent : public Component<WorldComponent>
-{
+class WorldComponent : public Component<WorldComponent> {
 public:
     WorldComponent();
 
@@ -10,6 +9,8 @@ public:
 
     virtual ~WorldComponent();
 
-private:
-    virtual void update();
+    inline virtual std::shared_ptr<ComponentBase> clone() const noexcept override final
+    {
+        return std::make_shared<WorldComponent>(*this);
+    }
 };

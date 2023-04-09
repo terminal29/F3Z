@@ -1,20 +1,20 @@
 #pragma once
-#include <entity/component/Component.h>
 #include <c3d++/C3DRenderer.h>
+#include <entity/component/Component.h>
 
-class RenderComponent : public Component<RenderComponent>
-{
+class RenderComponent : public Component<RenderComponent> {
 public:
-	RenderComponent();
-	RenderComponent(C3DRenderTarget target);
-	RenderComponent(C3DRenderTarget target, bool shadeless);
+    RenderComponent(C3DRenderTarget target, MessageType renderMessage);
 
-	virtual void receive(MessageType type) override;
+    RenderComponent(C3DRenderTarget target, MessageType renderMessage, bool shadeless);
 
-	virtual ~RenderComponent();
+    virtual void receive(MessageType type) final override;
+
+    virtual ~RenderComponent();
 
 private:
-	virtual void render();
-	C3DRenderTarget target_;
-	bool shadeless_ = false;
+    void render();
+    C3DRenderTarget target_;
+    MessageType renderMessage_;
+    bool shadeless_ = false;
 };

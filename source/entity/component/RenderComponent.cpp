@@ -1,39 +1,42 @@
-#include <entity/component/RenderComponent.h>
 #include <entity/Entity.h>
+#include <entity/component/RenderComponent.h>
 
-RenderComponent::RenderComponent() : RenderComponent(C3DRenderTarget::TOP)
+RenderComponent::RenderComponent(C3DRenderTarget target,
+    MessageType renderMessage)
+    : target_(target)
+    , renderMessage_(renderMessage)
 {
 }
 
-RenderComponent::RenderComponent(C3DRenderTarget target) : target_(target)
+RenderComponent::RenderComponent(C3DRenderTarget target,
+    MessageType renderMessage, bool shadeless)
+    : target_(target)
+    , shadeless_(shadeless)
+    , renderMessage_(renderMessage)
 {
 }
 
-RenderComponent::RenderComponent(C3DRenderTarget target, bool shadeless) : target_(target), shadeless_(shadeless)
-{
-}
-
-RenderComponent::~RenderComponent()
-{
-}
+RenderComponent::~RenderComponent() { }
 
 void RenderComponent::receive(MessageType type)
 {
-	if (!enabled_)
-		return;
+    std::cout << "RC::receive() : " << enabled_ << " : " << MessageTypeNames[type]
+              << " : " << MessageTypeNames[renderMessage_] << std::endl;
 
-	if (type == MessageType::MSG_RENDER)
-	{
-		render();
-	}
+    if (!enabled_)
+        return;
+
+    if (type == renderMessage_) {
+        render();
+    }
 }
 
 void RenderComponent::render()
 {
-	if (entity_ == nullptr)
-		return;
-	C3DRenderer::setTarget(target_);
-	if (shadeless_)
-		C3DRenderer::drawNextShadeless();
-	C3DRenderer::draw(entity_->getModel(), entity_->getTransform());
+    if (entity_ == nullptr)
+        return;
+    C3DRenderer::setTarget(target_);
+    if (shadeless_)
+        C3DRenderer::drawNextShadeless();
+    C3DRenderer::draw(entity_->getModel(), entity_->getTransform());
 }
