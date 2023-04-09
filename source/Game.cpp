@@ -1,4 +1,5 @@
 #include <Game.h>
+#include <entity/component/CharacterController.h>
 #include <entity/component/WorldComponent.h>
 #include <memory>
 
@@ -27,69 +28,70 @@ void Game::run()
 
     // load a texture
     C3DTexture homeTexture = Loader2::loadTexture("romfs:assets/textures/Home.png");
-    C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/Skybox1.png");
+
     C3DTexture tileset1 = Loader2::loadTexture("romfs:assets/textures/tileset1.png");
 
     // load an OBJ file
     C3DMesh homeMesh = Loader2::loadOBJ("romfs:/assets/models/Home.obj");
-    C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
+
     C3DMesh planeMesh = Loader2::loadOBJ("romfs:/assets/models/Plane.obj");
 
     // Load an island voxel tensor
-    VoxelTensor vt("romfs:/islands/home.json");
 
     // Create a model
     C3DModel homeModel(homeMesh, homeTexture);
-    C3DModel skyModel(skyMesh, skyTexture);
-
-    C3DModel beaconModel = vt.getModel();
 
     // Create and set some transforms
-    C3DTransform skyTransform;
-    skyTransform.setPos({ 0, 0, 0 });
-    skyTransform.setScale(10);
-
-    C3DTransform beaconTransform;
-    beaconTransform.setPos({ 0, 0, 0 });
 
     Entity world;
     world.setName("World");
     world.addComponent(WorldComponent {});
 
     // Create some models
-    Entity sky(skyModel, skyTransform);
-    sky.setName("Sky");
-    Entity beaconIsland(beaconModel, beaconTransform);
-    beaconIsland.setName("Island");
 
-    Entity camera;
-    camera.setName("Camera");
-
-    camera.addComponent(CameraController {});
-    sky.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_BACKGROUND, true });
-    beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
-
-    world.addChild(std::move(camera));
-    world.addChild(sky);
-    world.addChild(beaconIsland);
+    auto cameraEntityId = world.addChild([] {
+        Entity camera;
+        camera.setName("Camera");
+        camera.addComponent(CameraController {});
+        return camera;
+    }());
+    world.addChild([] {
+        VoxelTensor vt("romfs:/islands/home.json");
+        C3DModel beaconModel = vt.getModel();
+        C3DTransform beaconTransform;
+        Entity beaconIsland(beaconModel, beaconTransform);
+        beaconIsland.setName("Island");
+        beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
+        return beaconIsland;
+    }());
+    world.addChild([] {
+        C3DTexture skyTexture = Loader2::loadTexture("romfs:assets/textures/Skybox1.png");
+        C3DMesh skyMesh = Loader2::loadOBJ("romfs:/assets/models/Skybox.obj");
+        C3DModel skyModel(skyMesh, skyTexture);
+        C3DTransform skyTransform;
+        skyTransform.setPos({ 0, 0, 0 });
+        skyTransform.setScale(10);
+        Entity sky(skyModel, skyTransform);
+        sky.setName("Sky");
+        sky.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_BACKGROUND, true });
+        return sky;
+    }());
+    auto characterEntityId = world.addChild([] {
+        Entity gomez(C3DModel { Loader2::loadOBJ("romfs:/assets/models/Gomez.obj"), Loader2::loadTexture("romfs:/assets/textures/Gomez.png") });
+        gomez.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID, false, true });
+        gomez.addComponent(CharacterController {});
+        return gomez;
+    }());
+    world.findChildByName(cameraEntityId).lock()->getComponent<CameraController>().lock()->setFollowEntity(world.findChildByName(characterEntityId));
 
     while (aptMainLoop()) {
         consoleClear();
         Time::step();
-        // std::cout << "Dt: " << Time::dt() << std::endl;
+        std::cout << "Dt: " << Time::dt() << std::endl;
         hidScanInput();
         u32 kDown = hidKeysDown();
         if (kDown & KEY_START)
             break;
-
-        // Lock skybox to camera
-        auto skyTransform = sky.getTransform();
-        skyTransform.setYPR(skyTransform.getYPR() + vec<float, 3>(-0.001f, 0, 0));
-        skyTransform.setPos(camera.getTransform().getPos());
-        sky.setTransform(skyTransform);
-        auto beaconTransform = beaconIsland.getTransform();
-        beaconTransform.setPos(vec<float, 3> { -20, (float)std::cos(Time::t() / 100.0), -20 });
-        beaconIsland.setTransform(beaconTransform);
 
         world.receive(MessageType::MSG_UPDATE);
 

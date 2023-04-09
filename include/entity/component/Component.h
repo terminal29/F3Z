@@ -77,7 +77,7 @@ public:
         return getTypeID();
     }
 
-    inline virtual std::shared_ptr<ComponentBase> clone() const noexcept
+    inline virtual std::shared_ptr<ComponentBase> clone() const noexcept final
     {
         return std::make_shared<Derived>(static_cast<Derived const&>(*this));
     }

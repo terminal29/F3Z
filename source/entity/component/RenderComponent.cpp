@@ -5,14 +5,26 @@ RenderComponent::RenderComponent(C3DRenderTarget target,
     MessageType renderMessage)
     : target_(target)
     , renderMessage_(renderMessage)
+    , shadeless_(false)
+    , billboard_(false)
 {
 }
 
 RenderComponent::RenderComponent(C3DRenderTarget target,
     MessageType renderMessage, bool shadeless)
     : target_(target)
-    , shadeless_(shadeless)
     , renderMessage_(renderMessage)
+    , shadeless_(shadeless)
+    , billboard_(false)
+{
+}
+
+RenderComponent::RenderComponent(C3DRenderTarget target,
+    MessageType renderMessage, bool shadeless, bool billboard)
+    : target_(target)
+    , renderMessage_(renderMessage)
+    , shadeless_(shadeless)
+    , billboard_(billboard)
 {
 }
 
@@ -20,8 +32,6 @@ RenderComponent::~RenderComponent() { }
 
 void RenderComponent::receive(MessageType type)
 {
-    std::cout << "RC::receive() : " << enabled_ << " : " << MessageTypeNames[type]
-              << " : " << MessageTypeNames[renderMessage_] << std::endl;
 
     if (!enabled_)
         return;
@@ -38,5 +48,11 @@ void RenderComponent::render()
     C3DRenderer::setTarget(target_);
     if (shadeless_)
         C3DRenderer::drawNextShadeless();
-    C3DRenderer::draw(entity_->getModel(), entity_->getTransform());
+    if (billboard_) {
+        auto flatTransform = entity_->getTransform();
+        flatTransform.setYPR(C3DRenderer::getCameraTransform().getYPR());
+        C3DRenderer::draw(entity_->getModel(), flatTransform);
+    } else {
+        C3DRenderer::draw(entity_->getModel(), entity_->getTransform());
+    }
 }
