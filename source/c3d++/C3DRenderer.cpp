@@ -1,246 +1,258 @@
+
+
 #include <c3d++/C3DRenderer.h>
 
-namespace C3DRenderer
+namespace C3DRenderer {
+namespace local {
+    std::unique_ptr<C3DShader> defaultShader_;
+
+    C3D_RenderTarget *targetTopLeft_, *targetTopRight_, *targetBottom_;
+
+    int clearColor_ = 0x0000FFFF;
+
+    int renderFlags_ = (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
+
+    const float separationMultiplier_ = 0.3;
+
+    C3DRenderTarget currentTarget = C3DRenderTarget::TOP;
+
+    C3DTransform cameraTransform_;
+
+    bool shadeless_ = false;
+}
+
+void setCameraTransform(C3DTransform cameraTransform)
 {
-	namespace local
-	{
-		shaderProgram_s defaultShaderProgram_;
-		C3D_RenderTarget *targetTopLeft_, *targetTopRight_, *targetBottom_;
+    local::cameraTransform_ = std::move(cameraTransform);
+}
 
-		int clearColor_ = 0x0000FFFF;
+C3DTransform const& getCameraTransform()
+{
+    return local::cameraTransform_;
+}
 
-		int renderFlags_ =
-			(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) |
-			 GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
-			 GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
+void initRenderer()
+{
+    gfxInitDefault();
+    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 
-		const float separationMultiplier_ = 0.3;
+    local::targetTopLeft_ = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    C3D_RenderTargetClear(local::targetTopLeft_, C3D_CLEAR_ALL, local::clearColor_, 0);
+    C3D_RenderTargetSetOutput(local::targetTopLeft_, GFX_TOP, GFX_LEFT, local::renderFlags_);
 
-		C3DRenderTarget currentTarget = C3DRenderTarget::TOP;
+    local::targetTopRight_ = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    C3D_RenderTargetClear(local::targetTopRight_, C3D_CLEAR_ALL, local::clearColor_, 0);
+    C3D_RenderTargetSetOutput(local::targetTopRight_, GFX_TOP, GFX_RIGHT, local::renderFlags_);
 
-		C3DTransform cameraTransform_;
+    local::targetBottom_ = C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    C3D_RenderTargetClear(local::targetBottom_, C3D_CLEAR_ALL, local::clearColor_, 0);
+    C3D_RenderTargetSetOutput(local::targetBottom_, GFX_BOTTOM, GFX_LEFT, local::renderFlags_);
 
-		bool shadeless_ = false;
-	}
+    local::defaultShader_ = std::make_unique<C3DShader>(v_default_shbin, v_default_shbin_size);
+}
 
-	void setCameraTransform(C3DTransform cameraTransform)
-	{
-		local::cameraTransform_ = std::move(cameraTransform);
-	}
+void closeRenderer()
+{
+    C3D_RenderTargetDelete(local::targetTopLeft_);
+    C3D_RenderTargetDelete(local::targetTopRight_);
+    C3D_RenderTargetDelete(local::targetBottom_);
+    C3D_Fini();
+    gfxExit();
+}
 
-	C3DTransform const &getCameraTransform()
-	{
-		return local::cameraTransform_;
-	}
+void beginFrame()
+{
+    if (!gfxIs3D()) {
+        gfxSet3D(true);
+    }
+    C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+}
 
-	void initRenderer()
-	{
-		gfxInitDefault();
-		C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+void endFrame()
+{
+    C3D_FrameEnd(0);
+}
 
-		local::targetTopLeft_ = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-		C3D_RenderTargetClear(local::targetTopLeft_, C3D_CLEAR_ALL, local::clearColor_, 0);
-		C3D_RenderTargetSetOutput(local::targetTopLeft_, GFX_TOP, GFX_LEFT, local::renderFlags_);
+void setTarget(C3DRenderTarget target)
+{
+    local::currentTarget = target;
+}
 
-		local::targetTopRight_ = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-		C3D_RenderTargetClear(local::targetTopRight_, C3D_CLEAR_ALL, local::clearColor_, 0);
-		C3D_RenderTargetSetOutput(local::targetTopRight_, GFX_TOP, GFX_RIGHT, local::renderFlags_);
+void drawNextShadeless()
+{
+    local::shadeless_ = true;
+}
 
-		local::targetBottom_ = C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-		C3D_RenderTargetClear(local::targetBottom_, C3D_CLEAR_ALL, local::clearColor_, 0);
-		C3D_RenderTargetSetOutput(local::targetBottom_, GFX_BOTTOM, GFX_LEFT, local::renderFlags_);
+void draw(C3DModel const& model, C3DTransform const& transform)
+{
+    auto shader = model.getShader();
+    draw(model.getMesh(), model.getTexture(), shader.get() == nullptr ? *local::defaultShader_.get() : *shader.get(), transform);
+}
 
-		// Load shader (s)
-		DVLB_s *vshader_dvlb;
-		vshader_dvlb = DVLB_ParseFile((u32 *)v_default_shbin, v_default_shbin_size);
-		shaderProgramInit(&local::defaultShaderProgram_);
-		shaderProgramSetVsh(&local::defaultShaderProgram_, &vshader_dvlb->DVLE[0]);
-	}
+void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3DTransform const& transform)
+{
+    if (mesh.getVertices().size() < 1)
+        return;
 
-	void closeRenderer()
-	{
-		C3D_RenderTargetDelete(local::targetTopLeft_);
-		C3D_RenderTargetDelete(local::targetTopRight_);
-		C3D_RenderTargetDelete(local::targetBottom_);
-		C3D_Fini();
-		gfxExit();
-	}
+    // Uniform locations
+    int uLoc_projection, uLoc_modelView;
+    int uLoc_lightVec, uLoc_lightHalfVec, uLoc_lightClr, uLoc_material;
+    C3D_Mtx projection;
 
-	void beginFrame()
-	{
-		if (!gfxIs3D())
-		{
-			gfxSet3D(true);
-		}
-		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-	}
+    // Create a material for the model
+    C3D_Mtx material;
 
-	void endFrame()
-	{
-		C3D_FrameEnd(0);
-	}
+    if (local::shadeless_) {
+        material = {
+            {
+                { { 0.0f, 0.2f, 0.2f, 0.2f } }, // Ambient
+                { { 0.0f, 0.4f, 0.4f, 0.4f } }, // Diffuse
+                { { 0.0f, 0.8f, 0.8f, 0.8f } }, // Specular
+                { { 1.0f, 1.0f, 1.0f, 1.0f } }, // Emission
+            }
+        };
+        local::shadeless_ = false;
+    } else {
+        material = {
+            {
+                { { 0.0f, 0.2f, 0.2f, 0.2f } }, // Ambient
+                { { 0.0f, 0.4f, 0.4f, 0.4f } }, // Diffuse
+                { { 0.0f, 0.8f, 0.8f, 0.8f } }, // Specular
+                { { 1.0f, 0.0f, 0.0f, 0.0f } }, // Emission
+            }
+        };
+    }
 
-	void setTarget(C3DRenderTarget target)
-	{
-		local::currentTarget = target;
-	}
+    shaderProgram_s& shaderProgram = shader.getShaderProgram();
+    std::cout << "Shader: Default shader? " << (&shader == local::defaultShader_.get() ? "true" : "false") << std::endl;
 
-	void drawNextShadeless()
-	{
-		local::shadeless_ = true;
-	}
+    if (!shader.valid()) {
+        Error::throwError("Shader is not valid");
+    }
+    C3D_BindProgram(&shaderProgram);
+    std::cout << "Shader: Bound" << std::endl;
 
-	void draw(C3DModel const &model, C3DTransform const &transform)
-	{
-		draw(model.getMesh(), model.getTexture(), transform);
-	}
+    // Get uniform locations
+    uLoc_projection = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "projection");
+    uLoc_modelView = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "modelView");
+    uLoc_lightVec = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "lightVec");
+    uLoc_lightHalfVec = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "lightHalfVec");
+    uLoc_lightClr = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "lightClr");
+    uLoc_material = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "material");
 
-	void draw(C3DMesh const &mesh, C3DTexture const &texture, C3DTransform const &transform)
-	{
-		if (mesh.getVertices().size() < 1)
-			return;
+    // Configure attributes for use with the vertex shader
+    C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
+    AttrInfo_Init(attrInfo);
+    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
+    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord
+    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 3); // v2=normal
 
-		// Uniform locations
-		int uLoc_projection, uLoc_modelView;
-		int uLoc_lightVec, uLoc_lightHalfVec, uLoc_lightClr, uLoc_material;
-		C3D_Mtx projection;
+    C3D_BufInfo* bufInfo = C3D_GetBufInfo();
+    BufInfo_Init(bufInfo);
+    BufInfo_Add(bufInfo, mesh.getVBO().data(), sizeof(Vertex::value_type) * Vertex::stride, 3, 0x210);
 
-		// Create a material for the model
-		C3D_Mtx material;
+    C3D_CullFace(GPU_CULLMODE::GPU_CULL_FRONT_CCW);
+    C3D_TexBind(0, const_cast<C3D_Tex*>(&texture.getCTexture()));
 
-		if (local::shadeless_)
-		{
-			material = {
-				{
-					{{0.0f, 0.2f, 0.2f, 0.2f}}, // Ambient
-					{{0.0f, 0.4f, 0.4f, 0.4f}}, // Diffuse
-					{{0.0f, 0.8f, 0.8f, 0.8f}}, // Specular
-					{{1.0f, 1.0f, 1.0f, 1.0f}}, // Emission
-				}};
-			local::shadeless_ = false;
-		}
-		else
-		{
-			material = {
-				{
-					{{0.0f, 0.2f, 0.2f, 0.2f}}, // Ambient
-					{{0.0f, 0.4f, 0.4f, 0.4f}}, // Diffuse
-					{{0.0f, 0.8f, 0.8f, 0.8f}}, // Specular
-					{{1.0f, 0.0f, 0.0f, 0.0f}}, // Emission
-				}};
-		}
-		// Bind the default shaderprogram
-		C3D_BindProgram(&local::defaultShaderProgram_);
+    C3D_TexEnv* env = C3D_GetTexEnv(0);
+    C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_TEVSRC::GPU_PRIMARY_COLOR);
+    C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR);
+    C3D_TexEnvOpAlpha(env, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA);
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
-		// Get uniform locations
-		uLoc_projection = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "projection");
-		uLoc_modelView = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "modelView");
-		uLoc_lightVec = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "lightVec");
-		uLoc_lightHalfVec = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "lightHalfVec");
-		uLoc_lightClr = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "lightClr");
-		uLoc_material = shaderInstanceGetUniformLocation(local::defaultShaderProgram_.vertexShader, "material");
+    /* VIEW MATRIX */
+    vec<float, 3> cYPR = local::cameraTransform_.getYPR();
+    vec<float, 3> cPos = local::cameraTransform_.getPos();
 
-		// Configure attributes for use with the vertex shader
-		C3D_AttrInfo *attrInfo = C3D_GetAttrInfo();
-		AttrInfo_Init(attrInfo);
-		AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
-		AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord
-		AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, 3); // v2=normal
+    mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3> { 0, 1, 0 }, -cYPR.x));
+    mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3> { 1, 0, 0 }, -cYPR.y));
+    mat<float, 4, 4> cMatRoll = rotation_matrix(rotation_quat(vec<float, 3> { 0, 0, 1 }, -cYPR.z));
+    mat<float, 4, 4> cMatPos = translation_matrix(-cPos);
 
-		C3D_BufInfo *bufInfo = C3D_GetBufInfo();
-		BufInfo_Init(bufInfo);
-		BufInfo_Add(bufInfo, mesh.getVBO().data(), sizeof(Vertex::value_type) * Vertex::stride, 3, 0x210);
+    mat<float, 4, 4> cMatYPR = mul(cMatRoll, mul(cMatPitch, cMatYaw));
 
-		C3D_CullFace(GPU_CULLMODE::GPU_CULL_FRONT_CCW);
-		C3D_TexBind(0, const_cast<C3D_Tex *>(&texture.getCTexture()));
+    mat<float, 4, 4> viewMat = mul(cMatYPR, cMatPos);
 
-		C3D_TexEnv *env = C3D_GetTexEnv(0);
-		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_TEVSRC::GPU_PRIMARY_COLOR);
-		C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB::GPU_TEVOP_RGB_SRC_COLOR);
-		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    /* MODEL MATRIX */
+    vec<float, 3> mYPR = transform.getYPR();
+    vec<float, 3> mPos = transform.getPos();
+    float mScale = transform.getScale();
 
-		/* VIEW MATRIX */
-		vec<float, 3> cYPR = local::cameraTransform_.getYPR();
-		vec<float, 3> cPos = local::cameraTransform_.getPos();
+    mat<float, 4, 4> mMatYaw = rotation_matrix(rotation_quat(vec<float, 3> { 0, 1, 0 }, mYPR.x));
+    mat<float, 4, 4> mMatPitch = rotation_matrix(rotation_quat(vec<float, 3> { 1, 0, 0 }, mYPR.y));
+    mat<float, 4, 4> mMatRoll = rotation_matrix(rotation_quat(vec<float, 3> { 0, 0, 1 }, mYPR.z));
+    mat<float, 4, 4> mMatPos = translation_matrix(mPos);
+    mat<float, 4, 4> mMatScale = scaling_matrix(vec<float, 3> { mScale, mScale, mScale });
 
-		mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3>{0, 1, 0}, -cYPR.x));
-		mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3>{1, 0, 0}, -cYPR.y));
-		mat<float, 4, 4> cMatRoll = rotation_matrix(rotation_quat(vec<float, 3>{0, 0, 1}, -cYPR.z));
-		mat<float, 4, 4> cMatPos = translation_matrix(-cPos);
+    mat<float, 4, 4> mMatYPR = mul(mMatRoll, mul(mMatPitch, mMatYaw));
 
-		mat<float, 4, 4> cMatYPR = mul(cMatRoll, mul(cMatPitch, cMatYaw));
+    mat<float, 4, 4> modelMat = mul(mul(mMatPos, mMatScale), mMatYPR);
 
-		mat<float, 4, 4> viewMat = mul(cMatYPR, cMatPos);
+    mat<float, 4, 4> modelViewMat = mul(viewMat, modelMat);
 
-		/* MODEL MATRIX */
-		vec<float, 3> mYPR = transform.getYPR();
-		vec<float, 3> mPos = transform.getPos();
-		float mScale = transform.getScale();
+    C3D_Mtx C3D_ModelViewMat;
+    for (int i = 0; i < 4; i++) {
+        C3D_ModelViewMat.m[i * 4 + 0] = modelViewMat.row(i).w;
+        C3D_ModelViewMat.m[i * 4 + 1] = modelViewMat.row(i).x;
+        C3D_ModelViewMat.m[i * 4 + 2] = modelViewMat.row(i).y;
+        C3D_ModelViewMat.m[i * 4 + 3] = modelViewMat.row(i).z;
+    }
 
-		mat<float, 4, 4> mMatYaw = rotation_matrix(rotation_quat(vec<float, 3>{0, 1, 0}, mYPR.x));
-		mat<float, 4, 4> mMatPitch = rotation_matrix(rotation_quat(vec<float, 3>{1, 0, 0}, mYPR.y));
-		mat<float, 4, 4> mMatRoll = rotation_matrix(rotation_quat(vec<float, 3>{0, 0, 1}, mYPR.z));
-		mat<float, 4, 4> mMatPos = translation_matrix(mPos);
-		mat<float, 4, 4> mMatScale = scaling_matrix(vec<float, 3>{mScale, mScale, mScale});
+    /* */
 
-		mat<float, 4, 4> mMatYPR = mul(mMatRoll, mul(mMatPitch, mMatYaw));
+    // Update the uniforms
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &C3D_ModelViewMat);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_material, &material);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, -1.0f, -1.0f, -1.0f, 0.0f);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightHalfVec, 0.0f, 0.0f, -1.0f, 0.0f);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		mat<float, 4, 4> modelMat = mul(mul(mMatPos, mMatScale), mMatYPR);
+    C3D_AlphaTest(true, GPU_GREATER, 0);
+    // C3D_CullFace(GPU_CULL_NONE);
+    // C3D_DepthMap(true, -1.0f, 0);
+    // C3D_DepthTest(false, GPU_LEQUAL, GPU_WRITE_ALL);
+    // C3D_AlphaTest(true, GPU_GREATER, 0x00);
 
-		mat<float, 4, 4> modelViewMat = mul(viewMat, modelMat);
+    // if (texture.hasTransparency()) {
+    //     // C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_MIN, GPU_SRC_ALPHA, GPU_ONE, GPU_SRC_ALPHA, GPU_ONE);
+    //     C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_COLOR);
+    // }
+    // C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_ALL);
+    // C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
+    // C3D_AlphaTest(true, GPU_ALWAYS, 0);
+    // C3D_BlendingColor(0);
 
-		C3D_Mtx C3D_ModelViewMat;
-		for (int i = 0; i < 4; i++)
-		{
-			C3D_ModelViewMat.m[i * 4 + 0] = modelViewMat.row(i).w;
-			C3D_ModelViewMat.m[i * 4 + 1] = modelViewMat.row(i).x;
-			C3D_ModelViewMat.m[i * 4 + 2] = modelViewMat.row(i).y;
-			C3D_ModelViewMat.m[i * 4 + 3] = modelViewMat.row(i).z;
-		}
+    if (local::currentTarget == C3DRenderTarget::LEFT || local::currentTarget == C3DRenderTarget::TOP) {
+        Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, local::separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
+        C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
+        C3D_FrameDrawOn(local::targetTopLeft_);
+        C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
+    }
 
-		/* */
+    if (local::currentTarget == C3DRenderTarget::RIGHT || local::currentTarget == C3DRenderTarget::TOP) {
+        Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, local::separationMultiplier_ * osGet3DSliderState(), 2.0f, false);
+        C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
+        C3D_FrameDrawOn(local::targetTopRight_);
+        C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
+    }
 
-		// Update the uniforms
-		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView, &C3D_ModelViewMat);
-		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_material, &material);
-		C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightVec, -1.0f, -1.0f, -1.0f, 0.0f);
-		C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightHalfVec, 0.0f, 0.0f, -1.0f, 0.0f);
-		C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
+    if (local::currentTarget == C3DRenderTarget::BOTTOM) {
+        Mtx_PerspTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioBot, 0.01f, 1000.0f, false);
+        C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
+        C3D_FrameDrawOn(local::targetBottom_);
+        C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
+    }
 
-		if (local::currentTarget == C3DRenderTarget::LEFT || local::currentTarget == C3DRenderTarget::TOP)
-		{
-			Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, local::separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
-			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
-			C3D_FrameDrawOn(local::targetTopLeft_);
-			C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
-		}
+    linearFree(attrInfo);
+    linearFree(bufInfo);
+    linearFree(env);
+}
 
-		if (local::currentTarget == C3DRenderTarget::RIGHT || local::currentTarget == C3DRenderTarget::TOP)
-		{
-			Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, local::separationMultiplier_ * osGet3DSliderState(), 2.0f, false);
-			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
-			C3D_FrameDrawOn(local::targetTopRight_);
-			C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
-		}
-
-		if (local::currentTarget == C3DRenderTarget::BOTTOM)
-		{
-			Mtx_PerspTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioBot, 0.01f, 1000.0f, false);
-			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
-			C3D_FrameDrawOn(local::targetBottom_);
-			C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
-		}
-
-		linearFree(attrInfo);
-		linearFree(bufInfo);
-		linearFree(env);
-	}
-
-	void nextLayer()
-	{
-		C3D_FrameSplit(0);
-		C3D_FrameBufClear(&(local::targetTopLeft_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
-		C3D_FrameBufClear(&(local::targetTopRight_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
-		C3D_FrameBufClear(&(local::targetBottom_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
-	}
+void nextLayer()
+{
+    C3D_FrameSplit(0);
+    C3D_FrameBufClear(&(local::targetTopLeft_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+    C3D_FrameBufClear(&(local::targetTopRight_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+    C3D_FrameBufClear(&(local::targetBottom_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
+}
 };
