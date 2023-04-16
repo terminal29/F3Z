@@ -4,7 +4,6 @@
 #include <cmath>
 #include <library/linalg.h>
 
-
 using namespace linalg;
 
 class C3DTransform {
@@ -18,10 +17,15 @@ public:
     float getScale() const;
     void setScale(float scale);
 
+    // Degrees
     void setYPR(vec<float, 3> ypr);
     vec<float, 3> getYPR() const;
 
     vec<float, 3> getForward() const;
+
+    vec<float, 3> getUp() const;
+
+    vec<float, 3> getRight() const;
 
 private:
     vec<float, 3> position_ = { 0.0f, 0.0f, 0.0f };

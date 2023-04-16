@@ -19,6 +19,10 @@ namespace local {
     C3DTransform cameraTransform_;
 
     bool shadeless_ = false;
+
+    std::size_t triCount_ = 0;
+
+    mat<float, 4, 4> viewMatrix_;
 }
 
 void setCameraTransform(C3DTransform cameraTransform)
@@ -62,10 +66,25 @@ void closeRenderer()
 
 void beginFrame()
 {
+    std::cout << "Rendered " << local::triCount_ << " tris" << std::endl;
+    local::triCount_ = 0;
     if (!gfxIs3D()) {
         gfxSet3D(true);
     }
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+
+    /* VIEW MATRIX */
+    vec<float, 3> cYPR = local::cameraTransform_.getYPR();
+    vec<float, 3> cPos = local::cameraTransform_.getPos();
+
+    mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3> { 0, 1, 0 }, -cYPR.x));
+    mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3> { 1, 0, 0 }, -cYPR.y));
+    mat<float, 4, 4> cMatRoll = rotation_matrix(rotation_quat(vec<float, 3> { 0, 0, 1 }, -cYPR.z));
+    mat<float, 4, 4> cMatPos = translation_matrix(-cPos);
+
+    mat<float, 4, 4> cMatYPR = mul(cMatRoll, mul(cMatPitch, cMatYaw));
+
+    local::viewMatrix_ = mul(cMatYPR, cMatPos);
 }
 
 void endFrame()
@@ -124,13 +143,11 @@ void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3D
     }
 
     shaderProgram_s& shaderProgram = shader.getShaderProgram();
-    std::cout << "Shader: Default shader? " << (&shader == local::defaultShader_.get() ? "true" : "false") << std::endl;
 
     if (!shader.valid()) {
         Error::throwError("Shader is not valid");
     }
     C3D_BindProgram(&shaderProgram);
-    std::cout << "Shader: Bound" << std::endl;
 
     // Get uniform locations
     uLoc_projection = shaderInstanceGetUniformLocation(shaderProgram.vertexShader, "projection");
@@ -160,19 +177,6 @@ void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3D
     C3D_TexEnvOpAlpha(env, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A::GPU_TEVOP_A_SRC_ALPHA);
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
-    /* VIEW MATRIX */
-    vec<float, 3> cYPR = local::cameraTransform_.getYPR();
-    vec<float, 3> cPos = local::cameraTransform_.getPos();
-
-    mat<float, 4, 4> cMatYaw = rotation_matrix(rotation_quat(vec<float, 3> { 0, 1, 0 }, -cYPR.x));
-    mat<float, 4, 4> cMatPitch = rotation_matrix(rotation_quat(vec<float, 3> { 1, 0, 0 }, -cYPR.y));
-    mat<float, 4, 4> cMatRoll = rotation_matrix(rotation_quat(vec<float, 3> { 0, 0, 1 }, -cYPR.z));
-    mat<float, 4, 4> cMatPos = translation_matrix(-cPos);
-
-    mat<float, 4, 4> cMatYPR = mul(cMatRoll, mul(cMatPitch, cMatYaw));
-
-    mat<float, 4, 4> viewMat = mul(cMatYPR, cMatPos);
-
     /* MODEL MATRIX */
     vec<float, 3> mYPR = transform.getYPR();
     vec<float, 3> mPos = transform.getPos();
@@ -188,7 +192,7 @@ void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3D
 
     mat<float, 4, 4> modelMat = mul(mul(mMatPos, mMatScale), mMatYPR);
 
-    mat<float, 4, 4> modelViewMat = mul(viewMat, modelMat);
+    mat<float, 4, 4> modelViewMat = mul(local::viewMatrix_, modelMat);
 
     C3D_Mtx C3D_ModelViewMat;
     for (int i = 0; i < 4; i++) {
@@ -208,19 +212,6 @@ void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3D
     C3D_FVUnifSet(GPU_VERTEX_SHADER, uLoc_lightClr, 1.0f, 1.0f, 1.0f, 1.0f);
 
     C3D_AlphaTest(true, GPU_GREATER, 0);
-    // C3D_CullFace(GPU_CULL_NONE);
-    // C3D_DepthMap(true, -1.0f, 0);
-    // C3D_DepthTest(false, GPU_LEQUAL, GPU_WRITE_ALL);
-    // C3D_AlphaTest(true, GPU_GREATER, 0x00);
-
-    // if (texture.hasTransparency()) {
-    //     // C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_MIN, GPU_SRC_ALPHA, GPU_ONE, GPU_SRC_ALPHA, GPU_ONE);
-    //     C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_COLOR);
-    // }
-    // C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_ALL);
-    // C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
-    // C3D_AlphaTest(true, GPU_ALWAYS, 0);
-    // C3D_BlendingColor(0);
 
     if (local::currentTarget == C3DRenderTarget::LEFT || local::currentTarget == C3DRenderTarget::TOP) {
         Mtx_PerspStereoTilt(&projection, C3D_AngleFromDegrees(50.0f), C3D_AspectRatioTop, 0.01f, 1000.0f, local::separationMultiplier_ * -osGet3DSliderState(), 2.0f, false);
@@ -243,6 +234,8 @@ void draw(C3DMesh const& mesh, C3DTexture const& texture, C3DShader& shader, C3D
         C3D_DrawArrays(GPU_TRIANGLES, 0, mesh.getVertices().size());
     }
 
+    local::triCount_ += mesh.getVertices().size();
+
     linearFree(attrInfo);
     linearFree(bufInfo);
     linearFree(env);
@@ -255,4 +248,18 @@ void nextLayer()
     C3D_FrameBufClear(&(local::targetTopRight_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
     C3D_FrameBufClear(&(local::targetBottom_->frameBuf), C3D_CLEAR_DEPTH, 0, 0);
 }
+
+// Frustum createFrustumFromCamera(float aspect, float fovY, float zNear, float zFar)
+// {
+//     Frustum frustum;
+//     const float halfVSide = zFar * tanf(fovY * .5f);
+//     const float halfHSide = halfVSide * aspect;
+//     const auto forward = local::cameraTransform_.getForward();
+//     const auto right = local::cameraTransform_.getRight();
+//     const auto up = local::cameraTransform_.getUp();
+//     const auto frontMultFar = zFar * forward;
+//     auto pos = local::cameraTransform_.getPos();
+
+//     return frustum;
+// }
 };

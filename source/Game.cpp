@@ -2,6 +2,7 @@
 #include <entity/component/CharacterController.h>
 #include <entity/component/WorldComponent.h>
 #include <memory>
+#include <v_testing_shbin.h>
 
 Game::Game()
 {
@@ -61,6 +62,17 @@ void Game::run()
         C3DTransform beaconTransform;
         Entity beaconIsland(beaconModel, beaconTransform);
         beaconIsland.setName("Island");
+        beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
+        return beaconIsland;
+    }());
+    world.addChild([] {
+        VoxelTensor vt("romfs:/islands/home.json");
+        C3DModel beaconModel = vt.getModel();
+        beaconModel.setShader(std::make_shared<C3DShader>(v_testing_shbin, v_testing_shbin_size));
+        C3DTransform beaconTransform;
+        beaconTransform.setPos({ 10, 0, 0 });
+        Entity beaconIsland(beaconModel, beaconTransform);
+        beaconIsland.setName("Island2");
         beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
         return beaconIsland;
     }());

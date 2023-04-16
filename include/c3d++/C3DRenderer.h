@@ -20,6 +20,22 @@ enum class C3DRenderTarget {
 };
 
 namespace C3DRenderer {
+struct Plane {
+    linalg::vec<float, 3> normal;
+    float distance;
+};
+struct Frustum {
+    Plane topFace;
+    Plane bottomFace;
+
+    Plane rightFace;
+    Plane leftFace;
+
+    Plane farFace;
+    Plane nearFace;
+};
+
+// Frustum createFrustumFromCamera(float aspect, float fovY, float zNear, float zFar);
 
 void initRenderer();
 
