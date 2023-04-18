@@ -12,7 +12,7 @@ class WorldComponent;
 
 template <typename T>
 concept is_component_subtype = requires {
-    std::derived_from<T, Component<T>>;
+    requires std::derived_from<T, Component<T>>;
 };
 
 // template <typename T>
@@ -29,9 +29,10 @@ public:
     Entity(C3DModel model, C3DTransform transform);
 
     Entity(const Entity& other)
-        : model_(other.model_)
+        : name_(other.name_)
+        , model_(other.model_)
+        , world_(other.world_)
         , transform_(other.transform_)
-        , name_(other.name_)
     {
         for (auto& component : other.components_) {
             cloneComponent(*component.second);
