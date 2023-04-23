@@ -1,6 +1,10 @@
 export DEVKITPRO = C:/devkitPro
 export DEVKITARM = C:/devkitPro/devkitARM
 
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+
+uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
@@ -32,9 +36,10 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++
+SOURCES		:=  $(shell find 'source' -type d) 	#source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++ source/library/q3
+$(warning $(SOURCES))
 DATA		:=	data
-INCLUDES	:=	include
+INCLUDES	:=	include include/library/q3
 ROMFS		:=	romfs
 
 #---------------------------------------------------------------------------------

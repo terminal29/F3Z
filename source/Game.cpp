@@ -1,5 +1,6 @@
 #include <Game.h>
 #include <entity/component/CharacterController.h>
+#include <entity/component/RigidBodyComponent.h>
 #include <entity/component/WorldComponent.h>
 #include <memory>
 #include <v_testing_shbin.h>
@@ -63,6 +64,7 @@ void Game::run()
         Entity beaconIsland(beaconModel, beaconTransform);
         beaconIsland.setName("Island");
         beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
+        beaconIsland.addComponent(RigidBodyComponent {});
         return beaconIsland;
     }());
     world.addChild([] {
@@ -74,6 +76,7 @@ void Game::run()
         Entity beaconIsland(beaconModel, beaconTransform);
         beaconIsland.setName("Island2");
         beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
+        beaconIsland.addComponent(RigidBodyComponent {});
         return beaconIsland;
     }());
     world.addChild([] {
@@ -92,6 +95,7 @@ void Game::run()
         Entity gomez(C3DModel { Loader2::loadOBJ("romfs:/assets/models/Gomez.obj"), Loader2::loadTexture("romfs:/assets/textures/Gomez.png") });
         gomez.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID, false, true });
         gomez.addComponent(CharacterController {});
+        gomez.addComponent(RigidBodyComponent {});
         return gomez;
     }());
     world.findChildByName(cameraEntityId).lock()->getComponent<CameraController>().lock()->setFollowEntity(world.findChildByName(characterEntityId));
@@ -107,6 +111,7 @@ void Game::run()
 
         world.receive(MessageType::MSG_UPDATE);
 
+        world.receive(MessageType::MSG_PHYSICS_TICK);
         C3DRenderer::beginFrame();
         world.receive(MessageType::MSG_RENDER_BACKGROUND);
 

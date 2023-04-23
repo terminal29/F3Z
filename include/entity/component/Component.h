@@ -10,7 +10,8 @@ enum class MessageType {
     MSG_UPDATE = 0,
     MSG_RENDER_FOREGROUND,
     MSG_RENDER_MID,
-    MSG_RENDER_BACKGROUND
+    MSG_RENDER_BACKGROUND,
+    MSG_PHYSICS_TICK
 };
 
 extern std::unordered_map<MessageType, std::string> MessageTypeNames;
@@ -34,7 +35,13 @@ public:
 
     inline void setEntity(Entity* entity) noexcept
     {
+        if (entity_) {
+            onDetach();
+        }
         entity_ = entity;
+        if (entity) {
+            onAttach(entity);
+        }
     }
 
     Entity* getEntity() const noexcept
@@ -43,6 +50,10 @@ public:
     }
 
     virtual void onCreate() {};
+
+    virtual void onAttach(Entity* entity) {};
+
+    virtual void onDetach() {};
 
     virtual ~ComponentBase() { }
 

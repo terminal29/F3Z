@@ -1,17 +1,18 @@
 #pragma once
-#include <string>
-#include <iostream>
 #include <chrono>
+#include <iostream>
+#include <string>
+
 
 namespace Time {
 
-	// Get delta time
-	double dt();
+// Get delta time in seconds
+double dt();
 
-	// Get time elapsed
-	double t();
-	
-	// Call once per frame, updates delta time
-	void step();
+// Get time elapsed in seconds
+double t();
+
+// Call once per frame, updates delta time
+void step();
 
 }
