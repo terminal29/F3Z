@@ -13,6 +13,8 @@
 #include <Log.h>
 #include <c3d++/C3DModel.h>
 
+#include <entity/component/RigidbodyComponent.h>
+
 class VoxelType {
 public:
     C3DTexture texture;
@@ -30,6 +32,8 @@ public:
 
     void loadFromFile(std::string filepath);
     C3DModel getModel();
+
+    // std::vector<q3BoxDef> getCollisionShape();
 
     C3DTexture getStitchedTexture();
 

@@ -36,18 +36,20 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=  $(shell find 'source' -type d) 	#source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++ source/library/q3
-$(warning $(SOURCES))
+SOURCE_ROOT :=  source
+SOURCES_FULL:=  $(shell find '$(SOURCE_ROOT)' -type d)
+SOURCES		:=  $(subst $(SOURCE_ROOT),.,$(SOURCES_FULL)) #source # 	#source source/render source/entity source/entity/component source/library source/utilities source/utilities/voxel source/library/json source/c3d++ source/library/q3
 DATA		:=	data
-INCLUDES	:=	include include/library/q3
+INCLUDES	:=	include include/library
 ROMFS		:=	romfs
+
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -Werror=return-type -O1 -mword-relocations \
+CFLAGS	:=	-g -Wall -Werror=return-type -ggdb3 -O3 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
@@ -83,18 +85,19 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(SOURCE_ROOT)/$(dir)) \
+			$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-PICAFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.v.pica)))
-SHLISTFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.shlist)))
+CFILES		:=	$(foreach dir,$(SOURCES),$(subst $(SOURCE_ROOT)/,,$(wildcard $(SOURCE_ROOT)/$(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(subst $(SOURCE_ROOT)/,,$(wildcard $(SOURCE_ROOT)/$(dir)/*.cpp)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(subst $(SOURCE_ROOT)/,,$(wildcard $(SOURCE_ROOT)/$(dir)/*.s)))
+PICAFILES	:=	$(foreach dir,$(SOURCES),$(subst $(SOURCE_ROOT)/,,$(wildcard $(SOURCE_ROOT)/$(dir)/*.v.pica)))
+SHLISTFILES	:=	$(foreach dir,$(SOURCES),$(subst $(SOURCE_ROOT)/,,$(wildcard $(SOURCE_ROOT)/$(dir)/*.shlist)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
+$(info CPPFILES=$(CPPFILES))
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
@@ -111,7 +114,9 @@ endif
 
 export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 			$(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
-			$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+			$(CPPFILES:.cpp=.o)\
+			$(CFILES:.c=.o) \
+			$(SFILES:.s=.o)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
@@ -168,6 +173,7 @@ $(OUTPUT).3dsx	:	$(OUTPUT).elf $(OUTPUT).smdh
 else
 $(OUTPUT).3dsx	:	$(OUTPUT).elf
 endif
+
 
 $(OUTPUT).elf	:	$(OFILES)
 

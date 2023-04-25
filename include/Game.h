@@ -7,22 +7,19 @@
 
 #include <Loader.h>
 #include <entity/Entity.h>
-#include <entity/component/RenderComponent.h>
 #include <entity/component/CameraController.h>
+#include <entity/component/RenderComponent.h>
 #include <utilities\voxel\VoxelTensor.h>
 
 #include <utilities\Time.h>
 
-class Game
-{
+class Game {
 public:
-	static Game& instance();
-	void run();
+    static Game& instance();
+    void run();
 
 private:
-	static Game instance_;
-	Game();
-	~Game();
-
+    static Game instance_;
+    Game();
+    ~Game();
 };
-

@@ -4,7 +4,9 @@
 #include <string>
 #include <unordered_map>
 
-class Entity;
+namespace baba {
+class Entito;
+}
 
 enum class MessageType {
     MSG_UPDATE = 0,
@@ -18,6 +20,8 @@ extern std::unordered_map<MessageType, std::string> MessageTypeNames;
 
 class ComponentBase {
 public:
+    ComponentBase() = default;
+
     inline void setDeleting(bool deleting) noexcept
     {
         deleting_ = deleting;
@@ -33,7 +37,7 @@ public:
 
     virtual void receive(MessageType msg) = 0;
 
-    inline void setEntity(Entity* entity) noexcept
+    inline void setEntity(baba::Entito* entity) noexcept
     {
         if (entity_) {
             onDetach();
@@ -44,14 +48,15 @@ public:
         }
     }
 
-    Entity* getEntity() const noexcept
+    baba::Entito* getEntity() const noexcept
     {
         return entity_;
     }
 
+    // called after setEntity
     virtual void onCreate() {};
 
-    virtual void onAttach(Entity* entity) {};
+    virtual void onAttach(baba::Entito* entity) {};
 
     virtual void onDetach() {};
 
@@ -63,6 +68,23 @@ public:
 
     virtual std::shared_ptr<ComponentBase> clone() const noexcept = 0;
 
+    // copy constructor
+    // loses entity reference
+    ComponentBase(const ComponentBase& other)
+    {
+        entity_ = nullptr;
+        deleting_ = false;
+    }
+
+    // copy assignment
+    // loses entity reference
+    ComponentBase& operator=(const ComponentBase& other)
+    {
+        entity_ = nullptr;
+        deleting_ = false;
+        return *this;
+    }
+
 protected:
     template <typename T>
     static typeid_t type_id() noexcept
@@ -72,7 +94,7 @@ protected:
 
     bool enabled_ { true };
     bool deleting_ { false };
-    Entity* entity_ { nullptr };
+    baba::Entito* entity_ { nullptr };
 };
 
 template <typename Derived>

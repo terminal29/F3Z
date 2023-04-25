@@ -9,7 +9,7 @@ class CameraController : public Component<CameraController> {
 public:
     CameraController();
 
-    void setFollowEntity(std::weak_ptr<Entity> entity);
+    void setFollowEntity(std::weak_ptr<baba::Entito> entity);
 
     virtual void receive(MessageType type) final override;
 
@@ -18,7 +18,7 @@ public:
 private:
     virtual void update();
 
-    std::weak_ptr<Entity> followEntity_;
+    std::weak_ptr<baba::Entito> followEntity_;
     float currentAngle_ = 0.0f;
     float followDistance_ = 30.0f;
     vec<float, 3> followPoint_ { 0, 0, 0 };

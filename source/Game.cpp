@@ -45,14 +45,14 @@ void Game::run()
 
     // Create and set some transforms
 
-    Entity world;
+    baba::Entito world;
     world.setName("World");
     world.addComponent(WorldComponent {});
 
     // Create some models
 
-    auto cameraEntityId = world.addChild([] {
-        Entity camera;
+    auto cameraEntitoId = world.addChild([] {
+        baba::Entito camera;
         camera.setName("Camera");
         camera.addComponent(CameraController {});
         return camera;
@@ -61,22 +61,9 @@ void Game::run()
         VoxelTensor vt("romfs:/islands/home.json");
         C3DModel beaconModel = vt.getModel();
         C3DTransform beaconTransform;
-        Entity beaconIsland(beaconModel, beaconTransform);
+        baba::Entito beaconIsland(beaconModel, beaconTransform);
         beaconIsland.setName("Island");
         beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
-        beaconIsland.addComponent(RigidBodyComponent {});
-        return beaconIsland;
-    }());
-    world.addChild([] {
-        VoxelTensor vt("romfs:/islands/home.json");
-        C3DModel beaconModel = vt.getModel();
-        beaconModel.setShader(std::make_shared<C3DShader>(v_testing_shbin, v_testing_shbin_size));
-        C3DTransform beaconTransform;
-        beaconTransform.setPos({ 10, 0, 0 });
-        Entity beaconIsland(beaconModel, beaconTransform);
-        beaconIsland.setName("Island2");
-        beaconIsland.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID });
-        beaconIsland.addComponent(RigidBodyComponent {});
         return beaconIsland;
     }());
     world.addChild([] {
@@ -86,19 +73,20 @@ void Game::run()
         C3DTransform skyTransform;
         skyTransform.setPos({ 0, 0, 0 });
         skyTransform.setScale(10);
-        Entity sky(skyModel, skyTransform);
+        baba::Entito sky(skyModel, skyTransform);
         sky.setName("Sky");
         sky.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_BACKGROUND, true });
         return sky;
     }());
-    auto characterEntityId = world.addChild([] {
-        Entity gomez(C3DModel { Loader2::loadOBJ("romfs:/assets/models/Gomez.obj"), Loader2::loadTexture("romfs:/assets/textures/Gomez.png") });
+    auto characterEntitoId = world.addChild([] {
+        baba::Entito gomez(C3DModel { Loader2::loadOBJ("romfs:/assets/models/Gomez.obj"), Loader2::loadTexture("romfs:/assets/textures/Gomez.png") });
+        gomez.setName("Gomez");
         gomez.addComponent(RenderComponent { C3DRenderTarget::TOP, MessageType::MSG_RENDER_MID, false, true });
         gomez.addComponent(CharacterController {});
         gomez.addComponent(RigidBodyComponent {});
         return gomez;
     }());
-    world.findChildByName(cameraEntityId).lock()->getComponent<CameraController>().lock()->setFollowEntity(world.findChildByName(characterEntityId));
+    world.findChildByName(cameraEntitoId).lock()->getComponent<CameraController>().lock()->setFollowEntity(world.findChildByName(characterEntitoId));
 
     while (aptMainLoop()) {
         consoleClear();
@@ -112,6 +100,7 @@ void Game::run()
         world.receive(MessageType::MSG_UPDATE);
 
         world.receive(MessageType::MSG_PHYSICS_TICK);
+
         C3DRenderer::beginFrame();
         world.receive(MessageType::MSG_RENDER_BACKGROUND);
 

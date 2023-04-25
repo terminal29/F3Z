@@ -41,7 +41,6 @@ void VoxelTensor::loadFromFile(std::string filepath)
         if (!reader.parse(islandFileString, root)) {
             Error::throwError("Cannot parse JSON from " + filepath + "\n" + reader.getFormattedErrorMessages());
         }
-        bool valid = false;
         if (root.isMember("voxels")) {
             if (root["voxels"].isMember("static")) {
                 voxelTypes = root["voxels"]["static"];
@@ -66,7 +65,6 @@ void VoxelTensor::loadFromFile(std::string filepath)
         if (!reader.parse(voxelDataFileString, root)) {
             Error::throwError("Cannot parse JSON from romfs:/config/voxelData.json\n" + reader.getFormattedErrorMessages());
         }
-        valid = false;
         if (root.isMember("static")) {
             voxelData = root["static"];
         } else {
@@ -118,7 +116,8 @@ enum class Side : uint8_t {
     FRONT = (1u << 2),
     BACK = (1u << 3),
     LEFT = (1u << 4),
-    RIGHT = (1u << 5)
+    RIGHT = (1u << 5),
+    ALL = (1u << 0) | (1u << 1) | (1u << 2) | (1u << 3) | (1u << 4) | (1u << 5)
 };
 
 std::vector<Vertex> createFace(Side side)
@@ -191,7 +190,6 @@ std::vector<Vertex> createCube(
     static constexpr auto SIDES = { Side::TOP, Side::BOTTOM, Side::LEFT, Side::RIGHT, Side::FRONT, Side::BACK };
 
     std::vector<Vertex> vertices;
-    std::size_t reserved = 0;
 
     for (const auto& side : SIDES) {
         if (!(skipSides & static_cast<uint8_t>(side))) {
@@ -314,3 +312,23 @@ C3DTexture VoxelTensor::getStitchedTexture()
 {
     return stitchedTexture_;
 }
+
+// std::vector<q3BoxDef> VoxelTensor::getCollisionShape()
+// {
+//     std::vector<q3BoxDef> boxes;
+//     for (auto const& voxel : array_) {
+//         auto const& [x, y, z, _] = voxel.second;
+//         auto skipMask = getSkipMask(x, y, z, array_);
+//         if (skipMask & static_cast<uint8_t>(Side::ALL)) {
+//             continue;
+//         }
+
+//         q3BoxDef box;
+//         q3Transform t;
+//         q3Identity(t);
+//         t.position = { (float)x, (float)y, (float)z };
+//         box.Set(t, { 0.5, 0.5, 0.5 });
+//         boxes.push_back(box);
+//     }
+//     return boxes;
+// }

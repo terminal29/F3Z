@@ -1,34 +1,55 @@
 #include <entity/Entity.h>
 #include <entity/component/WorldComponent.h>
 
-Entity::Entity() { }
+baba::Entito::Entito() { }
 
-Entity::Entity(C3DModel model, C3DTransform transform)
+baba::Entito::Entito(C3DModel model, C3DTransform transform)
     : model_(model)
     , transform_(transform)
 {
 }
 
-Entity::Entity(C3DModel model)
+baba::Entito::Entito(C3DModel model)
     : model_(model)
 {
 }
 
-Entity::~Entity()
+baba::Entito::Entito(const baba::Entito& other)
+    : name_(other.name_)
+    , model_(other.model_)
+    , world_(other.world_)
+    , transform_(other.transform_)
+{
+    for (auto& component : other.components_) {
+        cloneComponent(*component.second);
+    }
+    for (const auto& otherChild : other.children_) {
+        children_[otherChild.first] = std::make_shared<baba::Entito>(*otherChild.second);
+    }
+}
+
+baba::Entito& baba::Entito::operator=(baba::Entito const& other)
+{
+    baba::Entito tmp(other);
+    tmp.swap(*this);
+    return *this;
+}
+
+baba::Entito::~Entito()
 {
     for (auto& component : components_) {
         component.second->setDeleting(true);
     }
 }
 
-C3DTransform const& Entity::getTransform() { return transform_; }
-void Entity::setTransform(C3DTransform transform) { transform_ = transform; }
+C3DTransform const& baba::Entito::getTransform() { return transform_; }
+void baba::Entito::setTransform(C3DTransform transform) { transform_ = transform; }
 
-C3DModel const& Entity::getModel() { return model_; }
+C3DModel const& baba::Entito::getModel() { return model_; }
 
-void Entity::setModel(C3DModel model) { model_ = model; }
+void baba::Entito::setModel(C3DModel model) { model_ = model; }
 
-void Entity::receive(MessageType message)
+void baba::Entito::receive(MessageType message)
 {
     for (auto& child : children_) {
         child.second->receive(message);
@@ -43,20 +64,20 @@ void Entity::receive(MessageType message)
     }
 }
 
-std::string Entity::addChild(Entity child)
+std::string baba::Entito::addChild(baba::Entito child)
 {
     std::string childName = child.getName();
     while (children_.contains(childName)) {
         childName += "_";
     }
-    children_[childName] = std::make_shared<Entity>(std::move(child));
+    children_[childName] = std::make_shared<baba::Entito>(std::move(child));
     if (auto worldComponent = getComponent<WorldComponent>().lock()) {
         children_[childName]->setWorld(worldComponent);
     }
     return childName;
 }
 
-bool Entity::removeChildByName(std::string name)
+bool baba::Entito::removeChildByName(std::string name)
 {
     if (children_.contains(name)) {
         children_.erase(name);
@@ -65,18 +86,18 @@ bool Entity::removeChildByName(std::string name)
     return false;
 }
 
-std::weak_ptr<Entity> Entity::findChildByName(std::string name)
+std::weak_ptr<baba::Entito> baba::Entito::findChildByName(std::string name)
 {
     if (children_.contains(name)) {
         return children_[name];
     }
-    return std::weak_ptr<Entity>();
+    return std::weak_ptr<baba::Entito>();
 }
 
-void Entity::setWorld(std::weak_ptr<WorldComponent> world) { world_ = world; }
+void baba::Entito::setWorld(std::weak_ptr<WorldComponent> world) { world_ = world; }
 
-std::weak_ptr<WorldComponent> Entity::getWorld() const { return world_; }
+std::weak_ptr<WorldComponent> baba::Entito::getWorld() const { return world_; }
 
-void Entity::setName(std::string name) { name_ = name; }
+void baba::Entito::setName(std::string name) { name_ = name; }
 
-std::string const& Entity::getName() const { return name_; }
+std::string const& baba::Entito::getName() const { return name_; }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BABA_ENTITY_HPP
+#define BABA_ENTITY_HPP
 #include <memory>
 #include <vector>
 
@@ -20,34 +21,18 @@ concept is_component_subtype = requires {
 //     std::is_same<T*, ComponentBase*>::value;
 // };
 
-class Entity {
+namespace baba {
+class Entito {
 public:
-    Entity();
-    ~Entity();
+    Entito();
+    ~Entito();
 
-    Entity(C3DModel model);
-    Entity(C3DModel model, C3DTransform transform);
+    Entito(C3DModel model);
+    Entito(C3DModel model, C3DTransform transform);
 
-    Entity(const Entity& other)
-        : name_(other.name_)
-        , model_(other.model_)
-        , world_(other.world_)
-        , transform_(other.transform_)
-    {
-        for (auto& component : other.components_) {
-            cloneComponent(*component.second);
-        }
-        for (const auto& otherChild : other.children_) {
-            children_[otherChild.first] = std::make_shared<Entity>(*otherChild.second);
-        }
-    }
+    Entito(const Entito& other);
 
-    Entity& operator=(Entity const& other)
-    {
-        Entity tmp(other);
-        tmp.swap(*this);
-        return *this;
-    };
+    Entito& operator=(Entito const& other);
 
     /* World getters and setters */
     void setWorld(std::weak_ptr<WorldComponent> world);
@@ -66,11 +51,12 @@ public:
 
     void receive(MessageType type);
 
-    std::string addChild(Entity child);
+    std::string addChild(Entito child);
     bool removeChildByName(std::string name);
-    std::weak_ptr<Entity> findChildByName(std::string name);
 
-    friend std::ostream& operator<<(std::ostream& stream, const Entity& entity)
+    std::weak_ptr<Entito> findChildByName(std::string name);
+
+    friend std::ostream& operator<<(std::ostream& stream, const Entito& entity)
     {
         stream << entity.getName() << std::endl;
         for (const auto& child : entity.children_) {
@@ -188,9 +174,9 @@ private:
     std::weak_ptr<WorldComponent> world_;
     std::unordered_map<ComponentBase::typeid_t, std::shared_ptr<ComponentBase>>
         components_;
-    std::unordered_map<std::string, std::shared_ptr<Entity>> children_;
+    std::unordered_map<std::string, std::shared_ptr<Entito>> children_;
 
-    void swap(Entity& other)
+    void swap(Entito& other)
     {
         std::swap(name_, other.name_);
         std::swap(model_, other.model_);
@@ -206,10 +192,12 @@ private:
         if (components_.contains(id)) {
             return false;
         }
-        auto clone = component.clone();
-        clone->setEntity(this);
-        clone->onCreate();
-        components_[id] = std::move(clone);
+        components_[id] = component.clone();
+        components_[id]->setEntity(this);
+        components_[id]->onCreate();
         return true;
     }
 };
+}
+
+#endif // ENTITY_H

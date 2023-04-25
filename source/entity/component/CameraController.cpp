@@ -86,7 +86,7 @@ CameraController::~CameraController()
 {
 }
 
-void CameraController::setFollowEntity(std::weak_ptr<Entity> entity)
+void CameraController::setFollowEntity(std::weak_ptr<baba::Entito> entity)
 {
     followEntity_ = entity;
 }
